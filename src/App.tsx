@@ -1,7 +1,7 @@
-import LoginRegister from "./components/LoginRegister";
+import AuthPage from "./pages/auth/AuthPage";
 import './assets/css/login-register.css';
 function App() {
-  return <LoginRegister />;
+  return <AuthPage />;
 }
 
 export default App;
