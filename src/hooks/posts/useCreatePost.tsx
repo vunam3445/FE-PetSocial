@@ -1,0 +1,69 @@
+import { useState } from "react";
+import api from "../../lib/axios";
+import { useParams } from "react-router-dom";
+
+export interface MediaFile {
+  file: File;
+  type: "image" | "video";
+  order?: number;
+}
+
+export interface SubmitData {
+  caption?: string;
+  visibility?: "public" | "private" | "friends";
+  shared_post_id?: string;
+  group_id?: string;
+  media?: MediaFile[];
+}
+
+export const useCreatePost = () => {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const { id } = useParams();
+  const createPost = async (formData: SubmitData) => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const apiForm = new FormData();
+
+      // Thông tin bài viết
+      apiForm.append("author_id", id);
+      apiForm.append("caption", formData.caption || "");
+      apiForm.append("visibility", formData.visibility || "public");
+
+      if (formData.shared_post_id) {
+        apiForm.append("shared_post_id", formData.shared_post_id);
+      }
+      if (formData.group_id) {
+        apiForm.append("group_id", formData.group_id);
+      }
+
+      // Thêm media (mảng)
+      if (formData.media?.length) {
+        formData.media.forEach((item, index) => {
+          apiForm.append(`media[${index}][file]`, item.file);
+          apiForm.append(`media[${index}][media_type]`, item.type);
+          apiForm.append(`media[${index}][order]`, String(item.order ?? index));
+        });
+      }
+
+      const res = await api.post("/posts", apiForm, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      return res.data;
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("Something went wrong");
+      }
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return { createPost, loading, error };
+};

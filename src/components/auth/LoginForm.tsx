@@ -1,16 +1,33 @@
-import { useState, type ChangeEvent, type FormEvent } from "react";
+import { useEffect, useState, type ChangeEvent, type FormEvent } from "react";
+import { useNavigate } from "react-router-dom";
+import { loginUser } from "../../services/authService";
 
-export const LoginForm = () => {
-const [form, setForm] = useState({email:"", password:""});
-const handleChange = (e:ChangeEvent<HTMLInputElement>)=>{
-    setForm({...form,[e.target.name]:e.target.value});
+export const LoginForm = ({ prefillEmail }: { prefillEmail: string }) => {
+  const [form, setForm] = useState({ email: prefillEmail, password: "" });
+  const navigate = useNavigate();
 
-};
-
-  const handleSubmit = (e: FormEvent) => {
-    e.preventDefault();
-    alert("Đăng nhập thành công! (Demo) email ${form.email} password ${form.password}");
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
   };
+
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    const result = await loginUser(form);
+    if (result.success) {
+      navigate("/profile");
+    } else {
+      alert(result.message);
+    }
+  };
+
+
+  useEffect(() => {
+    const token = localStorage.getItem("access_token");
+    if (token) {
+      navigate("/home");
+    }
+  }, []);
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
@@ -40,7 +57,7 @@ const handleChange = (e:ChangeEvent<HTMLInputElement>)=>{
       </div>
       <button
         type="submit"
-        className="w-full px-4 py-3 text-lg font-medium text-white bg-blue-600 shadow-lg rounded-xl"
+        className="w-full px-4 py-3 text-lg font-medium text-white transition bg-blue-600 shadow-lg rounded-xl hover:bg-blue-700"
       >
         Đăng nhập
       </button>

@@ -1,25 +1,83 @@
-import React from 'react'
-import { CoverImage } from '../components/atoms/CoverImage'
-import { ProfileSidebar } from '../components/molecules/ProfileSidebar'
-import { Profileheader } from '../components/molecules/Profileheader'
-import { NavTabs } from '../components/molecules/NavTabs'
-import { CreatePost } from '../components/molecules/CreatePost'
-import { Post } from '../components/molecules/Post'
-import '../assets/css/profile.css'
-export const ProfilePage = () => {
-  return (
-    <div className='container'>
-        <CoverImage imageURL='https://images.unsplash.com/photo-1506905925346-21bda4d32df4?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80'/>
-        <Profileheader imageURL='https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=387&q=80' name='Nguyễn Văn An' followers={100} following={200}/>
+import { useParams } from "react-router-dom";
+import { CoverImage } from "../components/atoms/CoverImage";
+import { Profileheader } from "../components/molecules/Profileheader";
+import { NavTabs } from "../components/molecules/NavTabs";
+import { CreatePost } from "../components/molecules/CreatePost";
+import  {ListPost}  from "../components/molecules/ListPost";
+import { Header } from "../components/atoms/Header";
+import { useUserProfile } from "../hooks/profile/useUserProfile";
+import { Avatar } from "../components/atoms/Avatar";
+import { ProfileLeftSidebar } from "../components/molecules/ProfileLeftSidebar";
+import { useEffect, useState } from "react";
+import { ListFriendProfile } from "../components/molecules/ListFriendProfile";
+import { ListVideoProfile } from "../components/molecules/ListVideoProfile";
+import { ListImageProfile } from "../components/molecules/ListImageProfile";
+import { ListPetProfile } from "../components/molecules/ListPetProfile";
+import { ProfileSkeleton } from "../components/skeleton/ProfileSkeleton";
+import type { Post } from "../types/ResponsePost";
+import "../assets/css/profile.css";
 
-        <NavTabs />
-        <div className="main-content">
-                <ProfileSidebar />
-                <div className='content'>
-                    <CreatePost />
-                    <Post />
-                </div>
+export const ProfilePage = () => {
+  const { id } = useParams(); // nếu id null => chính mình
+  const { user, pets, loading, error } = useUserProfile(id);
+  const [activeTab, setActiveTab] = useState("Posts");
+  const [avatarUpdate, setAvatarUpdate] = useState<string>("");
+  const [newPost, setNewPost] = useState<Post>();
+  useEffect(() => {
+    if (user) {
+      setAvatarUpdate(user.avatar_url);
+    }
+  }, [user?.avatar_url]);
+
+  if (loading) return <ProfileSkeleton />;
+  if (error || !user) return <div>{error ?? "Không tìm thấy người dùng."}</div>;
+  return (
+    <div>
+      <Header />
+      <div className="max-w-6xl mx-auto">
+        <div className="relative">
+          <CoverImage imageURL={user.cover_url} />
+          <Avatar
+            imageURL={avatarUpdate || user.avatar_url}
+            onChange={(avatarUrl) => setAvatarUpdate(avatarUrl)}
+          />
         </div>
+        <Profileheader
+          name={user.name}
+          followers={user.follower_count}
+          following={user.following_count}
+        />
+        <NavTabs activeTab={activeTab} onTabChange={setActiveTab} />
+        {activeTab === "Posts" && (
+          <div className="grid grid-cols-1 gap-6 mt-6 lg:grid-cols-3">
+            <ProfileLeftSidebar bio={user.bio} pets={pets} onViewAllPet={()=>setActiveTab("Pets")}/>
+            <div className="space-y-6 lg:col-span-2">
+              <CreatePost avatarUrl={avatarUpdate} userName={user.name} onPostCreated={(post) => setNewPost(post)} />
+              <ListPost newPost={newPost} />
+            </div>
+          </div>
+        )}
+        {activeTab === "Friends" && (
+          <div className="mt-4">
+            <ListFriendProfile />
+          </div>
+        )}
+        {activeTab === "Videos" && (
+          <div className="mt-4">
+            <ListVideoProfile />
+          </div>
+        )}
+        {activeTab === "Photos" && (
+          <div className="mt-4">
+            <ListImageProfile />
+          </div>
+        )}
+        {activeTab === "Pets" && (
+          <div className="mt-4">
+            <ListPetProfile />
+          </div>
+        )}
+      </div>
     </div>
-  )
-}
+  );
+};

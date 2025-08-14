@@ -1,30 +1,43 @@
 import { useState, type ChangeEvent, type FormEvent } from "react";
+import { registerUser } from "../../services/authService";
 
-export const RegisterForm = () => {
+export const RegisterForm = ({ onSuccess }: { onSuccess: (email: string) => void }) => {
   const [form, setForm] = useState({
     name: "",
+    date_of_birth: "",
+    gender: "unknown",
     email: "",
     password: "",
-    confirmPassword: "",
+    password_confirmation: "",
   });
 
-  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+  const handleChange = (
+    e: ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
+    const { name, value } = e.target;
+    setForm({ ...form, [name]: value });
   };
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    if (form.password !== form.confirmPassword) {
+    if (form.password !== form.password_confirmation) {
       alert("Mật khẩu xác nhận không khớp!");
       return;
     }
-    alert("Đăng ký thành công! (Demo)");
+    try {
+      await registerUser(form);
+      onSuccess(form.email);
+    } catch (error) {
+      console.error("Đăng ký thất bại:", error);
+      alert("Đăng ký thất bại. Vui lòng thử lại.");
+    }
   };
-
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div>
-        <label className="block mb-2 text-sm font-medium text-gray-700">Họ và tên</label>
+        <label className="block mb-2 text-sm font-medium text-gray-700">
+          Họ và tên
+        </label>
         <input
           type="text"
           name="name"
@@ -35,8 +48,41 @@ export const RegisterForm = () => {
           placeholder="Nhập họ và tên"
         />
       </div>
+
       <div>
-        <label className="block mb-2 text-sm font-medium text-gray-700">Email</label>
+        <label className="block mb-2 text-sm font-medium text-gray-700">
+          Ngày sinh
+        </label>
+        <input
+          type="date"
+          name="date_of_birth"
+          required
+          value={form.date_of_birth}
+          onChange={handleChange}
+          className="w-full px-4 py-3 border border-gray-300 outline-none rounded-xl focus:ring-2 focus:ring-blue-500"
+        />
+      </div>
+
+      <div>
+        <label className="block mb-2 text-sm font-medium text-gray-700">
+          Giới tính
+        </label>
+        <select
+          name="gender"
+          value={form.gender}
+          onChange={handleChange}
+          className="w-full px-4 py-3 border border-gray-300 outline-none rounded-xl focus:ring-2 focus:ring-blue-500"
+        >
+          <option value="unknown">Không xác định</option>
+          <option value="male">Nam</option>
+          <option value="female">Nữ</option>
+        </select>
+      </div>
+
+      <div>
+        <label className="block mb-2 text-sm font-medium text-gray-700">
+          Email
+        </label>
         <input
           type="email"
           name="email"
@@ -47,8 +93,11 @@ export const RegisterForm = () => {
           placeholder="Nhập email"
         />
       </div>
+
       <div>
-        <label className="block mb-2 text-sm font-medium text-gray-700">Mật khẩu</label>
+        <label className="block mb-2 text-sm font-medium text-gray-700">
+          Mật khẩu
+        </label>
         <input
           type="password"
           name="password"
@@ -59,19 +108,24 @@ export const RegisterForm = () => {
           placeholder="Nhập mật khẩu"
         />
       </div>
+
       <div>
-        <label className="block mb-2 text-sm font-medium text-gray-700">Xác nhận mật khẩu</label>
+        <label className="block mb-2 text-sm font-medium text-gray-700">
+          Xác nhận mật khẩu
+        </label>
         <input
           type="password"
-          name="confirmPassword"
+          name="password_confirmation"
           required
-          value={form.confirmPassword}
+          value={form.password_confirmation}
           onChange={handleChange}
           className="w-full px-4 py-3 border border-gray-300 outline-none rounded-xl focus:ring-2 focus:ring-blue-500"
           placeholder="Nhập lại mật khẩu"
         />
       </div>
+
       <button
+        onClick={handleSubmit}
         type="submit"
         className="w-full px-4 py-3 text-lg font-medium text-white bg-blue-600 shadow-lg rounded-xl"
       >

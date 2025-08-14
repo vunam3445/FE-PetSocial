@@ -1,18 +1,43 @@
-export const AboutPets = () => {
+export const AboutPets = ({
+  pets,
+  onViewAllPet
+}: {
+  pets: Array<{ id: string; name: string; avatar_url: string }>;
+  onViewAllPet:()=>void;
+}) => {
   return (
-    <div className="widget">
-      <h3 className="widget-title">My Pets</h3>
-      <div className="info-item">
-        <svg className="info-icon" viewBox="0 0 24 24">
-          <path d="M4.5 12.5c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5-.67-1.5-1.5-1.5-1.5.67-1.5 1.5zM9 16c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5-.67-1.5-1.5-1.5S9 15.17 9 16zm4.5-3.5c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5-.67-1.5-1.5-1.5-1.5.67-1.5 1.5zM16 16c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5-.67-1.5-1.5-1.5-1.5.67-1.5 1.5z" />
-        </svg>
-        <strong>Max</strong> - Golden Retriever (3 years)
+    <div className="p-6 bg-white rounded-lg shadow-sm">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-lg font-semibold">Thú cưng của tôi</h3>
+        <button className="text-sm font-medium text-blue-600 hover:text-blue-700" onClick={onViewAllPet}>
+          Xem tất cả
+        </button>
       </div>
-      <div className="info-item">
-        <svg className="info-icon" viewBox="0 0 24 24">
-          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm3.5 6L12 10.5 8.5 8 12 5.5 15.5 8zM7.5 12c0-1.66 1.34-3 3-3s3 1.34 3 3-1.34 3-3 3-3-1.34-3-3z" />
-        </svg>
-        <strong>Luna</strong> - British Shorthair (2 years)
+      <div className="grid grid-cols-2 gap-3">
+        {Array.isArray(pets) &&
+          pets.map((pet) => (
+            <div
+              key={pet.petId}
+              className="relative overflow-hidden transition-colors bg-gray-200 rounded-lg cursor-pointer aspect-square pet-card hover:bg-gray-300"
+            >
+              <img
+                src={pet.avatar_url}
+                alt={pet.name}
+                className="object-cover w-full h-full"
+                onError={(e) => {
+                  e.currentTarget.style.display = "none";
+                  const parent = e.currentTarget.parentElement;
+                  if (parent) {
+                    parent.innerHTML =
+                      '<span class="absolute inset-0 flex items-center justify-center text-3xl">🐾</span>';
+                  }
+                }}
+              />
+              <div className="absolute bottom-0 left-0 right-0 px-2 py-1 text-sm font-medium text-center text-white bg-gradient-to-t from-black/70 to-transparent">
+                {pet.name}
+              </div>
+            </div>
+          ))}
       </div>
     </div>
   );
