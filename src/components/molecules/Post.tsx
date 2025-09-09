@@ -1,84 +1,55 @@
-import React, { useState } from "react";
-import {
-  Card,
-  CardHeader,
-  CardActions,
-  Avatar,
-  Typography,
-  Box,
-  Button,
-  IconButton,
-  Menu,
-  MenuItem,
-} from "@mui/material";
-import {
-  Favorite,
-  FavoriteBorder,
-  Comment,
-  Share,
-  MoreVert,
-} from "@mui/icons-material";
-import PostLightboxModal from "../modals/PostLightboxModal"; // đổi path nếu cần
-import PostDetailModal from "../modals/PostDetailModal";
-import type { Author } from "../../types/ResponsePost";
+
+import { useState } from "react";
+import { Card } from "@mui/material";
+import { useParams } from "react-router-dom";
+import useUserId from "../../hooks/auth/useUserId";
+import { useLike } from "../../hooks/posts/useLike";
+import PostLightboxModal from "../modals/PostLightboxModal";
+import { PostHeader } from "../atoms/PostHeader";
+import { MediaGrid } from "../atoms/MediaGrid";
+import { SharedPost } from "./PostShare";
+import { PostActions } from "../atoms/PostActions";
 import { PostCaption } from "../atoms/PostCaption";
-import dayjs from "dayjs";
-import relativeTime from "dayjs/plugin/relativeTime";
-
-dayjs.extend(relativeTime);
-
-interface Media {
-  media_id: string;
-  post_id: string;
-  media_url: string;
-  media_type: "image" | "video"; // giới hạn kiểu để dễ kiểm tra
-  order: number;
-  created_at: string;
-  updated_at: string;
+import type { Media , Post} from "../../types/ResponsePost";
+export interface PostProps {
+  post: Post;
+  onEditPost: () => void;
+  onDeletePost: () => void;
+  onDetailPost: () => void;
+  onError?: (msg: string) => void;
+  onSharePost: () => void;
 }
 
-interface Post {
-  post_id: string;
-  author_id: string;
-  caption: string | null;
-  visibility: "public" | "private" | "friends";
-  shared_post_id: string | null;
-  group_id: string | null;
-  created_at: string;
-  updated_at: string;
-  media: Media[];
-  author: Author;
-}
-
-const Post = ({ post, onEditPost}: { post: Post, onEditPost: () => void  }) => {
+const Post = ({
+  post,
+  onEditPost,
+  onDeletePost,
+  onDetailPost,
+  onError,
+  onSharePost,
+}: PostProps) => {
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [mediaList, setMediaList] = useState<Media[]>([]);
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const [liked, setLiked] = useState(false);
-  const [openModalDetail, setOpenModalDetail] = useState(false);
-  const [likeCount, setLikeCount] = useState(
-    Math.floor(Math.random() * 100) + 10
-  );
-  const [anchorEl, setAnchorEl] = useState(null);
-  const open = Boolean(anchorEl);
-  const handleClick = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
+  const [liked, setLiked] = useState(post.is_liked === 1);
+  const [likesCount, setLikesCount] = useState(post.likes_count);
 
-  // Khi đóng menu
-  const handleClose = () => {
-    setAnchorEl(null);
-  };
+  const { id } = useParams();
+  const isOwner = useUserId(id);
+  const { toggleLike, error } = useLike();
 
   const openLightbox = (media: Media) => {
-    const index = post.media.findIndex((m) => m.media_url === media.media_url);
-    setMediaList(post.media);
+    const mediaSource = post.shared_post?.media ?? post.media;
+    const index = mediaSource.findIndex((m) => m.media_url === media.media_url);
+    setMediaList(mediaSource);
     setSelectedIndex(index);
     setLightboxOpen(true);
   };
+
   const closeLightbox = () => {
     setLightboxOpen(false);
   };
+
   const showPrev = () => {
     setSelectedIndex((prev) => (prev === 0 ? mediaList.length - 1 : prev - 1));
   };
@@ -87,14 +58,38 @@ const Post = ({ post, onEditPost}: { post: Post, onEditPost: () => void  }) => {
     setSelectedIndex((prev) => (prev === mediaList.length - 1 ? 0 : prev + 1));
   };
 
-  const handleLike = () => {
-    setLiked(!liked);
-    setLikeCount((prev) => (liked ? prev - 1 : prev + 1));
+  const handleLike = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      const res = await toggleLike(post.post_id);
+
+      if (res === true || res === 1) {
+        setLiked(true);
+        setLikesCount((prev) => prev + 1);
+      } else {
+        setLiked(false);
+        setLikesCount((prev) => Math.max(prev - 1, 0));
+      }
+    } catch (err: any) {
+      if (err.response?.status === 429) {
+        onError?.("Bạn đã thực hiện quá nhiều lần, vui lòng thử lại sau!");
+      } else {
+        onError?.("Có lỗi xảy ra, vui lòng thử lại.");
+        console.error(error);
+      }
+    }
   };
 
-  const handleClickDetail = () => {
-    setOpenModalDetail(true);
+  const handleComment = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onDetailPost?.();
   };
+
+  const handleShare = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onSharePost?.();
+  };
+
   return (
     <>
       <Card
@@ -105,225 +100,41 @@ const Post = ({ post, onEditPost}: { post: Post, onEditPost: () => void  }) => {
           boxShadow: "0 8px 32px rgba(0,0,0,0.1)",
           overflow: "visible",
         }}
-        onClick={handleClickDetail}
+        onClick={() => onDetailPost?.()}
       >
-        <CardHeader
-          avatar={
-            <Avatar
-              src={post.author.avatar_url}
-              sx={{
-                width: 48,
-                height: 48,
-                border: "2px solid #e3f2fd",
-              }}
-            >
-              {post.author.name}
-            </Avatar>
-          }
-          action={
-            <>
-              <IconButton aria-label="settings"
-              onClick={(e)=>{
-                e.stopPropagation();
-                handleClick(e);
-              }}
-              >
-                <MoreVert />
-              </IconButton>
-              <Menu
-                anchorEl={anchorEl}
-                open={open}
-                onClose={handleClose}
-                onClick={(e) => e.stopPropagation()}
-                anchorOrigin={{
-                  vertical: "bottom",
-                  horizontal: "right",
-                }}
-                transformOrigin={{
-                  vertical: "top",
-                  horizontal: "right",
-                }}
-              >
-                <MenuItem onClick={(e)=>{
-                  e.stopPropagation();
-                  onEditPost?.();
-                }}>Sửa bài viết</MenuItem>
-              </Menu>
-            </>
-          }
-          title={
-            <Typography variant="h6" sx={{ fontWeight: 600 }}>
-              {post.author.name}
-            </Typography>
-          }
-          subheader={
-            <Typography variant="body2" color="text.secondary">
-              {dayjs().diff(dayjs(post.updated_at), "day") < 1
-                ? dayjs(post.updated_at).fromNow()
-                : dayjs(post.updated_at).format("DD/MM/YYYY")}
-            </Typography>
-          }
-          sx={{ pb: 1 }}
+        <PostHeader
+          post={post}
+          isOwner={isOwner}
+          onEdit={onEditPost}
+          onDelete={onDeletePost}
         />
 
         {post.caption && (
           <PostCaption
             caption={post.caption || ""}
             maxChars={280}
-            onExpand={handleClickDetail}
+            onExpand={onDetailPost}
           />
         )}
 
-        {post.media && post.media.length > 0 && (
-          <Box sx={{ px: 0, mt: 1.5 }}>
-            <Box
-              sx={{
-                display: "grid",
-                gap: "2px",
-                borderRadius: "8px",
-                overflow: "hidden",
-                ...(post.media.length === 1 && { gridTemplateColumns: "1fr" }),
-                ...(post.media.length === 2 && {
-                  gridTemplateColumns: "1fr 1fr",
-                }),
-                ...(post.media.length === 3 && {
-                  gridTemplateColumns: "1fr 1fr",
-                  gridTemplateRows: "1fr 1fr",
-                }),
-                ...(post.media.length >= 4 && {
-                  gridTemplateColumns: "1fr 1fr",
-                  gridTemplateRows: "1fr 1fr",
-                }),
-              }}
-            >
-              {(post.media.length > 4
-                ? post.media.slice(0, 4)
-                : post.media
-              ).map((media, index) => (
-                <Box
-                  key={index}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    openLightbox(media);
-                  }}
-                  sx={{
-                    position: "relative",
-                    overflow: "hidden",
-                    cursor: "pointer",
-                    aspectRatio: "1 / 1",
-                    "&:hover": {
-                      transform: "scale(1.02)",
-                      boxShadow: "0 8px 25px rgba(0,0,0,0.15)",
-                    },
-                    transition: "transform 0.2s ease, box-shadow 0.2s ease",
-                    ...(post.media.length === 3 &&
-                      index === 0 && {
-                        gridRow: "1 / 3",
-                        aspectRatio: "auto",
-                      }),
-                  }}
-                >
-                  {media.media_type === "image" ? (
-                    <img
-                      src={media.media_url}
-                      alt="Post media"
-                      style={{
-                        width: "100%",
-                        height: "100%",
-                        objectFit: "cover",
-                        display: "block",
-                      }}
-                    />
-                  ) : (
-                    <video
-                      src={media.media_url}
-                      style={{
-                        width: "100%",
-                        height: "100%",
-                        objectFit: "cover",
-                        display: "block",
-                      }}
-                      muted
-                      preload="metadata"
-                    />
-                  )}
-                  {post.media.length > 4 && index === 3 && (
-                    <Box
-                      sx={{
-                        position: "absolute",
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                        background: "rgba(0,0,0,0.6)",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        color: "white",
-                        fontSize: "24px",
-                        fontWeight: "bold",
-                      }}
-                    >
-                      +{post.media.length - 4}
-                    </Box>
-                  )}
-                </Box>
-              ))}
-            </Box>
-          </Box>
+        <MediaGrid media={post.media} onMediaClick={openLightbox} />
+
+        {post.shared_post && (
+          <SharedPost
+            sharedPost={post.shared_post}
+            onDetailPost={onDetailPost}
+            onMediaClick={openLightbox}
+          />
         )}
 
-        <CardActions sx={{ px: 2, py: 1.5, justifyContent: "space-between" }}>
-          <Box sx={{ display: "flex", gap: 1 }}>
-            <Button
-              startIcon={liked ? <Favorite /> : <FavoriteBorder />}
-              onClick={handleLike}
-              sx={{
-                textTransform: "none",
-                color: liked ? "#1976d2" : "text.secondary",
-                fontWeight: 500,
-                transition: "all 0.2s ease",
-                "&:hover": {
-                  backgroundColor: "rgba(25, 118, 210, 0.08)",
-                },
-              }}
-            >
-              {likeCount} Likes
-            </Button>
-            <Button
-              startIcon={<Comment />}
-              sx={{
-                textTransform: "none",
-                color: "text.secondary",
-                fontWeight: 500,
-                transition: "all 0.2s ease",
-                "&:hover": {
-                  backgroundColor: "rgba(25, 118, 210, 0.08)",
-                },
-              }}
-              onClick={(e) => {
-                e.stopPropagation();
-                handleClickDetail();
-              }}
-            >
-              Comment
-            </Button>
-          </Box>
-          <Button
-            startIcon={<Share />}
-            sx={{
-              textTransform: "none",
-              color: "text.secondary",
-              fontWeight: 500,
-              transition: "all 0.2s ease",
-              "&:hover": {
-                backgroundColor: "rgba(25, 118, 210, 0.08)",
-              },
-            }}
-          >
-            Share
-          </Button>
-        </CardActions>
+        <PostActions
+          liked={liked}
+          likesCount={likesCount}
+          commentsCount={post.comments_count}
+          onLike={handleLike}
+          onComment={handleComment}
+          onShare={handleShare}
+        />
       </Card>
 
       <PostLightboxModal
@@ -333,12 +144,6 @@ const Post = ({ post, onEditPost}: { post: Post, onEditPost: () => void  }) => {
         onClose={closeLightbox}
         onPrev={showPrev}
         onNext={showNext}
-      />
-
-      <PostDetailModal
-        open={openModalDetail}
-        post={post}
-        onClose={() => setOpenModalDetail(false)}
       />
     </>
   );

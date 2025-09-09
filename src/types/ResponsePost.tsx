@@ -1,4 +1,5 @@
 export type Media = {
+  id: string | null; // nếu BE không trả thì có thể để optional: id?: string
   media_id: string;
   post_id: string;
   media_url: string;
@@ -7,11 +8,26 @@ export type Media = {
   created_at: string;
   updated_at: string;
 };
-export type Author={
-  user_id:string;
-  name:string;
-  avatar_url:string;
-}
+
+export type Author = {
+  user_id: string;
+  name: string;
+  avatar_url: string;
+};
+
+export type Tag = {
+  tag_id: string;
+  name: string;
+  created_at: string;
+  updated_at: string;
+  pivot: {
+    post_id: string;
+    tag_id: string;
+    created_at: string;
+    updated_at: string;
+  };
+};
+
 export type Post = {
   post_id: string;
   author_id: string;
@@ -21,9 +37,17 @@ export type Post = {
   group_id: string | null;
   created_at: string;
   updated_at: string;
-  media: Media[];
-  author:Author;
 
+  media: Media[];
+  author: Author;
+  tags: Tag[];
+
+  likes_count: number;
+  is_liked: number;
+  comments_count: number;
+
+  // 👇 thêm post gốc khi share
+  shared_post?: Post | null;
 };
 
 export type PaginationMeta = {

@@ -15,9 +15,9 @@ export const AboutPets = ({
       </div>
       <div className="grid grid-cols-2 gap-3">
         {Array.isArray(pets) &&
-          pets.map((pet) => (
+          pets.map((pet,index) => (
             <div
-              key={pet.petId}
+              key={index}
               className="relative overflow-hidden transition-colors bg-gray-200 rounded-lg cursor-pointer aspect-square pet-card hover:bg-gray-300"
             >
               <img

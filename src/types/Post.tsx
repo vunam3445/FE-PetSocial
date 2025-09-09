@@ -6,14 +6,22 @@ export interface MediaFile {
 
 export interface SubmitData {
   caption?: string;
-  visibility?: "public" | "private" | "friends";
+  visibility?:string;
   shared_post_id?: string;
   group_id?: string;
-  media?: MediaFile[];
+  media?: MediaItem[];
 }
 // types/Post.ts
 export interface MediaItem {
+  id:string;
+  media_id?:string;
+  post_id?:string;
+
   file?: File;         // khi upload mới
-  url?: string;        // khi load từ server
-  type: 'image' | 'video';
+  media_url?: string;        // khi load từ server
+
+  media_type: 'image' | 'video';
+  order?: number;     // thứ tự hiển thị
+  created_at?: string;
+  updated_at?: string;
 }

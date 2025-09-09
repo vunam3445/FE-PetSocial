@@ -1,6 +1,7 @@
 import { useState } from "react";
 import api from "../../lib/axios";
 import { useParams } from "react-router-dom";
+import type { MediaItem } from "../../types/Post";
 
 export interface MediaFile {
   file: File;
@@ -10,10 +11,10 @@ export interface MediaFile {
 
 export interface SubmitData {
   caption?: string;
-  visibility?: "public" | "private" | "friends";
+  visibility?: string;
   shared_post_id?: string;
   group_id?: string;
-  media?: MediaFile[];
+  media?: MediaItem[];
 }
 
 export const useCreatePost = () => {
@@ -24,7 +25,6 @@ export const useCreatePost = () => {
     try {
       setLoading(true);
       setError(null);
-
       const apiForm = new FormData();
 
       // Thông tin bài viết
@@ -39,15 +39,15 @@ export const useCreatePost = () => {
         apiForm.append("group_id", formData.group_id);
       }
 
+
       // Thêm media (mảng)
       if (formData.media?.length) {
         formData.media.forEach((item, index) => {
           apiForm.append(`media[${index}][file]`, item.file);
-          apiForm.append(`media[${index}][media_type]`, item.type);
+          apiForm.append(`media[${index}][media_type]`, item.media_type);
           apiForm.append(`media[${index}][order]`, String(item.order ?? index));
         });
       }
-
       const res = await api.post("/posts", apiForm, {
         headers: { "Content-Type": "multipart/form-data" },
       });

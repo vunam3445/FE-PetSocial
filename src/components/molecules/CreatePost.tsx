@@ -1,9 +1,8 @@
-import React, { useState } from "react";
+import { useState } from "react";
 
 import CreatePostModal from "../modals/CreatePostModal";
-import { useCreatePost, type MediaFile } from "../../hooks/posts/useCreatePost";
-import type { SubmitData } from "../../types/Post";
-import type { Post } from "../../types/ResponsePost";
+import { useCreatePost } from "../../hooks/posts/useCreatePost";
+import type { SubmitData , MediaItem} from "../../types/Post";
 
 
 
@@ -16,31 +15,18 @@ export const CreatePost = ({ avatarUrl,userName, onPostCreated}: { avatarUrl: st
   };
   const handleSubmit = async (formDataFromModal: {
     caption?: string;
-    visibility?: "public" | "private" | "friends";
-    images?: File[];
-    videos?: File[];
+    visibility?: string;
+    shared_post_id?: string;
+    group_id?: string;
+    media?: MediaItem[];
   }) => {
     try {
-      // map images/videos sang media
-      const media: MediaFile[] = [
-        ...(formDataFromModal.images?.map((file, index) => ({
-          file,
-          type: "image" as const,
-          order: index,
-        })) || []),
-        ...(formDataFromModal.videos?.map((file, index) => ({
-          file,
-          type: "video" as const,
-          order: formDataFromModal.images?.length
-            ? formDataFromModal.images.length + index
-            : index,
-        })) || []),
-      ];
-
       const submitData: SubmitData = {
         caption: formDataFromModal.caption,
         visibility: formDataFromModal.visibility,
-        media,
+        shared_post_id: formDataFromModal.shared_post_id,
+        group_id: formDataFromModal.group_id,
+        media: formDataFromModal.media,
       };
 
 
@@ -80,6 +66,7 @@ export const CreatePost = ({ avatarUrl,userName, onPostCreated}: { avatarUrl: st
         </div>
       </div>
             {loading && <div className="text-sm text-blue-500">Đang đăng bài...</div>} {/* 🆕 */}
+            {error && <div className="text-sm text-red-500">Lỗi: {error}</div>} {/* 🆕 */}
 
       {openModel && (
         <CreatePostModal
