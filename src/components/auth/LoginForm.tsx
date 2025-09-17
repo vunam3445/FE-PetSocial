@@ -1,68 +1,66 @@
-import React, { useState, type ChangeEvent, type FormEvent } from "react";
+import { useEffect, useState, type ChangeEvent, type FormEvent } from "react";
+import { useNavigate } from "react-router-dom";
+import { loginUser } from "../../services/authService";
 
-export const LoginForm = () => {
-  // State cho dữ liệu form
-  const [form, setForm] = useState({
-    email: "",
-    password: "",
-  });
+export const LoginForm = ({ prefillEmail }: { prefillEmail: string }) => {
+  const [form, setForm] = useState({ email: prefillEmail, password: "" });
+  const navigate = useNavigate();
 
-  // Xử lý khi thay đổi input
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setForm((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Xử lý khi submit
-  const handleLoginSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    console.log("Đăng nhập với:", form);
-
-    // TODO: Gửi API hoặc xử lý đăng nhập ở đây
-    alert(`Đăng nhập: ${form.email}`);
+    const result = await loginUser(form);
+    if (result.success) {
+      navigate("/");
+    } else {
+      alert(result.message);
+    }
   };
+
+
+  useEffect(() => {
+    const token = localStorage.getItem("access_token");
+    if (token) {
+      navigate("/");
+    }
+  }, []);
 
   return (
-    <div>
-      <form onSubmit={handleLoginSubmit} className="space-y-6">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Email
-          </label>
-          <input
-            type="email"
-            name="email"
-            required
-            value={form.email}
-            onChange={handleChange}
-            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none"
-            placeholder="Nhập email của bạn"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Mật khẩu
-          </label>
-          <input
-            type="password"
-            name="password"
-            required
-            value={form.password}
-            onChange={handleChange}
-            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none"
-            placeholder="Nhập mật khẩu"
-          />
-        </div>
-        <button
-          type="submit"
-          className="w-full py-3 px-4 rounded-xl bg-blue-600 text-white font-medium text-lg shadow-lg"
-        >
-          Đăng nhập
-        </button>
-      </form>
-    </div>
+    <form onSubmit={handleSubmit} className="space-y-6">
+      <div>
+        <label className="block mb-2 text-sm font-medium text-gray-700">Email</label>
+        <input
+          type="email"
+          name="email"
+          required
+          value={form.email}
+          onChange={handleChange}
+          className="w-full px-4 py-3 border border-gray-300 outline-none rounded-xl focus:ring-2 focus:ring-blue-500"
+          placeholder="Nhập email của bạn"
+        />
+      </div>
+      <div>
+        <label className="block mb-2 text-sm font-medium text-gray-700">Mật khẩu</label>
+        <input
+          type="password"
+          name="password"
+          required
+          value={form.password}
+          onChange={handleChange}
+          className="w-full px-4 py-3 border border-gray-300 outline-none rounded-xl focus:ring-2 focus:ring-blue-500"
+          placeholder="Nhập mật khẩu"
+        />
+      </div>
+      <button
+        type="submit"
+        className="w-full px-4 py-3 text-lg font-medium text-white transition bg-blue-600 shadow-lg rounded-xl hover:bg-blue-700"
+      >
+        Đăng nhập
+      </button>
+    </form>
   );
 };
