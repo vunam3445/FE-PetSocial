@@ -2,6 +2,8 @@ import { useState } from "react";
 import {PetEditModal} from "../modals/PetEditModal";
 import ConfirmationDialog from "./ConfirmationDialog";
 import api from "../../lib/axios";
+import useUserId from "../../hooks/auth/useUserId";
+import { useParams } from "react-router-dom";
 
 export const PetProfile = ({
   pet_id,
@@ -22,8 +24,10 @@ export const PetProfile = ({
   birthday: string;
   onChange?:()=>void;
 }) => {
+  const {id} = useParams();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDialogOpen, setIsDialogPen] = useState(false);
+  const isOwner = useUserId(id);
   const handleEdit = () => {
     setIsModalOpen(true);
   };
@@ -63,14 +67,14 @@ export const PetProfile = ({
         <p className="mb-3 text-xs text-white/80">
           {birthday} • {gender}
         </p>
-        <div className="flex gap-2">
+        {isOwner && (<div className="flex gap-2">
           <button className="w-3/4 px-3 py-2 text-sm font-medium text-white border rounded-lg bg-white/20 backdrop-blur-sm hover:bg-white/30 border-white/30" onClick={handleEdit}>
             <i className="mr-2 fas fa-edit"></i>Sửa
           </button>
           <button className="w-1/4 px-3 py-2 text-sm font-medium text-white border rounded-lg bg-red-500/30 backdrop-blur-sm hover:bg-red-500/50 border-white/30" onClick={handleDelete}>
             <i className="fas fa-trash-alt"></i>
           </button>
-        </div>
+        </div>)}
       </div>
       {isModalOpen && 
         <PetEditModal

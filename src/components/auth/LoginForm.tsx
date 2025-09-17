@@ -15,7 +15,7 @@ export const LoginForm = ({ prefillEmail }: { prefillEmail: string }) => {
     e.preventDefault();
     const result = await loginUser(form);
     if (result.success) {
-      navigate("/profile");
+      navigate("/");
     } else {
       alert(result.message);
     }
@@ -25,7 +25,7 @@ export const LoginForm = ({ prefillEmail }: { prefillEmail: string }) => {
   useEffect(() => {
     const token = localStorage.getItem("access_token");
     if (token) {
-      navigate("/home");
+      navigate("/");
     }
   }, []);
 

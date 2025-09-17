@@ -1,37 +1,46 @@
 import { useEffect, useState } from "react";
 import { getUser } from "../../services/profileService";
+import type { typeUser } from "../../types/User";
 
-interface typeUser  {
- user_id: string;
-  name: string;
-  email: string;
-  avatar_url: string;
-  cover_url: string;
-  bio: string;
-  follower_count: number;
-  following_count: number;
-}
-export const useUserProfile = (userId: string) => {
-  const [userInfo, setUserInfo] = useState<typeUser>();
+export const useUserProfile = (userId?: string) => {
+  const [userInfo, setUserInfo] = useState<typeUser | null>(null);
   const [pets, setPets] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!userId) return; // không có id thì bỏ qua
+
+    let isMounted = true; // tránh set state sau khi unmount
+
     const fetchProfile = async () => {
       try {
+        setLoading(true);
+        setError(null);
+
         const data = await getUser(userId);
-        setUserInfo(data.user);
-        setPets(data.pets);
+
+        if (isMounted) {
+          setUserInfo(data.user);
+          setPets(data.pets ?? []);
+        }
       } catch (err) {
-        setError("Không thể tải thông tin người dùng.");
-        console.error(err);
+        if (isMounted) {
+          setError("Không thể tải thông tin người dùng.");
+          console.error(err);
+        }
       } finally {
-        setLoading(false);
+        if (isMounted) {
+          setLoading(false);
+        }
       }
     };
 
     fetchProfile();
+
+    return () => {
+      isMounted = false;
+    };
   }, [userId]);
 
   return { user: userInfo, pets, loading, error };

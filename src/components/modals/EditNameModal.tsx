@@ -54,6 +54,7 @@ const EditNameModal: React.FC<EditNameModalProps> = ({
     try {
       const res = await api.post(`/users/${id}/updateProfile`, formData);
       if (res.status === 200) {
+        localStorage.setItem('user_name',username);
         onChange(username.trim());
         onClose();
       }

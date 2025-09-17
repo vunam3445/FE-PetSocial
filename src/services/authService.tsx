@@ -16,15 +16,20 @@ export const loginUser = async (data: {
   email: string;
   password: string;
 }) => {
- try {
+  try {
     const response = await api.post("/auth/login", data);
 
     const token = response.data.access_token;
-    localStorage.setItem("access_token", token);
+    const user = response.data.user;
+    
 
+    // Lưu token + user info vào localStorage
+    localStorage.setItem("access_token", token);
+    localStorage.setItem("user_name", user?.name || "");
+    localStorage.setItem("avatar_url", user?.avatar_url || "");
+    localStorage.setItem("user_id", user?.user_id || "");
     return { success: true, message: "Đăng nhập thành công", data: response.data };
   } catch (error: any) {
-    // Nếu API trả về lỗi (ví dụ: 401), lấy thông báo hoặc dùng mặc định
     const message =
       error?.response?.data?.message || "Đăng nhập thất bại. Vui lòng kiểm tra thông tin.";
     return { success: false, message };

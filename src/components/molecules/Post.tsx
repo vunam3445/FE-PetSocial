@@ -32,7 +32,7 @@ const Post = ({
   const [mediaList, setMediaList] = useState<Media[]>([]);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [liked, setLiked] = useState(post.is_liked === 1);
-  const [likesCount, setLikesCount] = useState(post.likes_count);
+  const [likesCount, setLikesCount] = useState(post.likes_count ?? 0);
 
   const { id } = useParams();
   const isOwner = useUserId(id);

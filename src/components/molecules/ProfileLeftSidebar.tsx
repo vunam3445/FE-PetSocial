@@ -9,7 +9,7 @@ export const ProfileLeftSidebar = ({bio , pets,onViewAllPet}:{bio:string , pets:
                 <div className="space-y-6 lg:sticky lg:top-6 sticky-sidebar">
                     <About bio={bio}/>
                     <AboutPets pets={pets} onViewAllPet={onViewAllPet}/>
-                    <FriendsSection />
+                    {/* <FriendsSection /> */}
                 </div>
     </div>
   )

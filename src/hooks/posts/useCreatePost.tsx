@@ -1,6 +1,5 @@
 import { useState } from "react";
 import api from "../../lib/axios";
-import { useParams } from "react-router-dom";
 import type { MediaItem } from "../../types/Post";
 
 export interface MediaFile {
@@ -20,7 +19,7 @@ export interface SubmitData {
 export const useCreatePost = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { id } = useParams();
+  const id = localStorage.getItem("user_id") || "";
   const createPost = async (formData: SubmitData) => {
     try {
       setLoading(true);

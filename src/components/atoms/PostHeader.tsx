@@ -12,7 +12,9 @@ import { useState } from "react";
 import type { Post } from "../../types/ResponsePost";
 import relativeTime from "dayjs/plugin/relativeTime";
 import dayjs from "dayjs";
+
 dayjs.extend(relativeTime);
+
 interface PostHeaderProps {
   post: Post;
   isOwner: boolean;
@@ -31,52 +33,57 @@ export const PostHeader = ({
 
   return (
     <CardHeader
-      avatar={<Avatar src={post.author.avatar_url}>{post.author.name}</Avatar>}
+      avatar={
+        <Avatar src={post.author.avatar_url}>
+          {post.author.name.charAt(0)}
+        </Avatar>
+      }
       action={
-        <>
-          <IconButton  onClick={(e) => {
-          e.stopPropagation(); // ✅ chỉ chặn khi bấm menu
-          setAnchorEl(e.currentTarget);
-        }}>
-            <MoreVert />
-          </IconButton>
-          <Menu
-            anchorEl={anchorEl}
-            open={open}
-            onClose={() => setAnchorEl(null)}
-            onClick={(e) => e.stopPropagation()}
-
-          >
-            {isOwner && [
+        isOwner && (
+          <>
+            <IconButton
+              onClick={(e) => {
+                e.stopPropagation(); // ✅ chặn click lan ra ngoài
+                setAnchorEl(e.currentTarget);
+              }}
+            >
+              <MoreVert />
+            </IconButton>
+            <Menu
+              anchorEl={anchorEl}
+              open={open}
+              onClose={() => setAnchorEl(null)}
+              onClick={(e) => e.stopPropagation()}
+            >
               <MenuItem
-                key="edit"
                 onClick={() => {
                   onEdit();
                   setAnchorEl(null); // ✅ đóng menu
                 }}
               >
                 Sửa bài viết
-              </MenuItem>,
+              </MenuItem>
               <MenuItem
-                key="delete"
                 onClick={() => {
                   onDelete();
                   setAnchorEl(null); // ✅ đóng menu
                 }}
               >
                 Xóa bài viết
-              </MenuItem>,
-            ]}
-          </Menu>
-        </>
+              </MenuItem>
+            </Menu>
+          </>
+        )
       }
       title={
-        <Typography variant="h6" sx={{ fontWeight: 600 }}
-        onClick={(e) => {
-        e.stopPropagation(); 
-        // 👉 gọi mở chi tiết post ở đây nếu bạn muốn
-        // ví dụ: onDetailPost?.()
-      }}>
+        <Typography
+          variant="h6"
+          sx={{ fontWeight: 600 }}
+          onClick={(e) => {
+            e.stopPropagation();
+            // 👉 bạn có thể gọi mở chi tiết post ở đây
+          }}
+        >
           {post.author.name}
         </Typography>
       }

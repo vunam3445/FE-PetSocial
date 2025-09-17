@@ -30,7 +30,7 @@ export const PostCaption = ({
           part.startsWith("#") ? (
             <Link
               key={index}
-              href={`/tags/${part.substring(1)}`} // điều hướng theo tag
+              href={`/search?type=post&keyword=${part.substring(1)}`} // điều hướng theo tag
               underline="hover"
               color="primary"
               sx={{ fontWeight: 500 }}

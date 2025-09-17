@@ -4,13 +4,13 @@ import { CreatePetModal } from "../modals/CreatePetModal";
 import { useParams } from "react-router-dom";
 import { LoadingSpinner } from "../loadings/LoadingSpinner";
 import api from "../../lib/axios";
-
+import useUserId from "../../hooks/auth/useUserId";
 export const ListPetProfile = () => {
   const { id } = useParams();
   const [pets, setPets] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
-
+  const isOwner = useUserId(id);
   const fetchPets = async () => {
     try {
       if (!id) {
@@ -40,12 +40,12 @@ export const ListPetProfile = () => {
           <h2 className="text-xl font-semibold text-gray-900">
             Thú cưng của tôi
           </h2>
-          <button
+         {isOwner && ( <button
             className="flex items-center px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700"
             onClick={handleCreatePet}
           >
             <i className="mr-2 fas fa-plus"></i>Thêm thú cưng
-          </button>
+          </button>)}
         </div>
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
           {pets.map((pet) => (

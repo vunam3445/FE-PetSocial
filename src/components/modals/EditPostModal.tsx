@@ -13,10 +13,7 @@ import type { Post as PostType, Media } from "../../types/ResponsePost";
 interface EditPostModalProps {
   open: boolean;
   onClose: () => void;
-  // onSubmit cần postId, dữ liệu mới và danh sách media bị xóa
   onSubmit: (postId: string, formData: SubmitData) => void;
-  avatarURL: string;
-  userName: string;
   postToEdit: PostType; // Dữ liệu bài viết để sửa
   isShare?: boolean; // 👈 thêm
 }
@@ -37,21 +34,21 @@ const EditPostModal: React.FC<EditPostModalProps> = ({
   const [newMedia, setNewMedia] = useState<MediaItem[]>([]);
   // useEffect để điền dữ liệu khi modal mở với một bài viết
   useEffect(() => {
-  if (postToEdit) {
-    const sourceMedia = postToEdit.shared_post
-      ? postToEdit.shared_post.media
-      : postToEdit.media;
+    if (postToEdit) {
+      const sourceMedia = postToEdit.shared_post
+        ? postToEdit.shared_post.media
+        : postToEdit.media;
 
-    const mapped = (sourceMedia || []).map((m) => ({
-      ...m,
-      id: crypto.randomUUID(),
-    }));
-    setVisibility(postToEdit.visibility || "public");
-    setCaption(postToEdit.caption || "");
-    setOldMedia(mapped);
-    setNewMedia([]);
-  }
-}, [postToEdit]);
+      const mapped = (sourceMedia || []).map((m) => ({
+        ...m,
+        id: crypto.randomUUID(),
+      }));
+      setVisibility(postToEdit.visibility || "public");
+      setCaption(postToEdit.caption || "");
+      setOldMedia(mapped);
+      setNewMedia([]);
+    }
+  }, [postToEdit]);
 
   // Danh sách media tổng hợp để hiển thị preview
 
@@ -103,7 +100,6 @@ const EditPostModal: React.FC<EditPostModalProps> = ({
 
     // Dữ liệu media chỉ chứa các file MỚI được thêm vào
 
-    
     const submitData: SubmitData = {
       caption: caption?.trim(),
       visibility,
@@ -189,6 +185,33 @@ const EditPostModal: React.FC<EditPostModalProps> = ({
             mediaList={medias}
             onRemove={postToEdit.shared_post ? undefined : removeMedia}
           />
+        )}
+        {postToEdit.shared_post_id && (
+          <Box sx={{ mb: 1, pl: 2 }}>
+            {" "}
+            {/* 👈 thêm pl để cách lề trái */}
+            {/* Avatar + name */}
+            <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+              <img
+                src={postToEdit.author.avatar_url}
+                alt={postToEdit.author.name}
+                style={{
+                  width: 36,
+                  height: 36,
+                  borderRadius: "50%",
+                  marginRight: 8,
+                  objectFit: "cover",
+                }}
+              />
+              <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+                {postToEdit.author.name}
+              </Typography>
+            </Box>
+            {/* Caption */}
+            <Typography variant="body1" sx={{ whiteSpace: "pre-line" }}>
+              {postToEdit.caption}
+            </Typography>
+          </Box>
         )}
 
         {/* Upload buttons */}

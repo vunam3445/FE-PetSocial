@@ -24,9 +24,10 @@ export const Avatar = ({ imageURL,onChange }: { imageURL: string, onChange:(avat
         headers: {
           "Content-Type": "multipart/form-data", // Cái này cần THÊM nếu không được tự động
         },
-      });      console.log("Uploaded avatar:", res.data);
+      });
 
     const newAvatarUrl = res.data.user.avatar_url;
+    localStorage.setItem('avatar_url',newAvatarUrl);
     setAvaterURL(newAvatarUrl);
     onChange(newAvatarUrl);
 
