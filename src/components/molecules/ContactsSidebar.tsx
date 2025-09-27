@@ -1,44 +1,75 @@
-import React from 'react';
-import ContactItem from '../atoms/ContactItem';
+import React, { useState, useEffect } from "react";
+import ContactItem from "../atoms/ContactItem";
+import { useGetRecentConversation } from "../../hooks/chat/useGetRecentConversation";
+import { useChat } from "../../contexts/ChatContext";
+import { useCreateConversation } from "../../hooks/chat/useCreateConversation";
 
 const ContactsSidebar: React.FC = () => {
-  const contacts = [
-    {
-      id: 1,
-      name: 'Sarah Johnson',
-      avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=48&h=48&fit=crop&crop=face',
-      isOnline: true,
-      lastSeen: 'Online'
-    },
-    {
-      id: 2,
-      name: 'Mike Chen',
-      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=48&h=48&fit=crop&crop=face',
-      isOnline: true,
-      lastSeen: 'Online'
-    },
-    {
-      id: 3,
-      name: 'Emma Wilson',
-      avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=48&h=48&fit=crop&crop=face',
-      isOnline: false,
-      lastSeen: '2 min ago'
-    },
-    // Add more contacts as needed
-  ];
+  const { fetchRecentConversations } = useGetRecentConversation();
+  const [contacts, setContacts] = useState<any[]>([]);
+  const { onlineUsers, openConversation } = useChat(); 
+  const { createConversation } = useCreateConversation();
+  const currentUserId = localStorage.getItem("user_id");
+
+  useEffect(() => {
+    const loadContacts = async () => {
+      const data = await fetchRecentConversations();
+      const mapped = data.map((conv: any) => {
+        const user = conv.participants.find(
+          (p: any) => p.user_id !== currentUserId
+        );
+        return {
+          userId: user.user_id,
+          conversationId: conv.conversation_id,
+          name: user.name,
+          avatar: user.avatar_url,
+        };
+      });
+      setContacts(mapped);
+    };
+    loadContacts();
+  }, [fetchRecentConversations, currentUserId]);
+
+  // 👉 Khi click vào contact
+  const handleMessage = async (contact: any) => {
+    try {
+      // nếu đã có conversationId thì dùng luôn
+      let convId = contact.conversationId;
+      let convData;
+
+      if (!convId) {
+        // nếu chưa có thì tạo mới
+        const res = await createConversation({ participant_ids: [contact.userId] });
+        convData = res.data;
+        convId = convData.conversation_id;
+      }
+
+      const newConv = {
+        id: convId,
+        title: contact.name,
+        avatarUrl: contact.avatar,
+      };
+
+      openConversation(newConv);
+    } catch (error) {
+      console.error("Open chat failed:", error);
+    }
+  };
 
   return (
     <aside className="sticky hidden w-1/4 h-screen overflow-y-auto bg-white border-l border-gray-200 lg:block top-16">
       <div className="p-6">
-        <h2 className="mb-6 text-xl font-semibold text-gray-900">Recent Contacts</h2>
+        <h2 className="mb-6 text-xl font-semibold text-gray-900">
+          Recent Contacts
+        </h2>
         <div className="space-y-4">
           {contacts.map((contact) => (
             <ContactItem
-              key={contact.id}
+              key={contact.userId}
               name={contact.name}
               avatar={contact.avatar}
-              isOnline={contact.isOnline}
-              lastSeen={contact.lastSeen}
+              isOnline={onlineUsers.includes(contact.userId)}
+              onClick={() => handleMessage(contact)} // ✅ truyền contact
             />
           ))}
         </div>

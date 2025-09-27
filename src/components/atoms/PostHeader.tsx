@@ -7,6 +7,7 @@ import {
   CardHeader,
   Box,
 } from "@mui/material";
+import { useNavigate } from "react-router-dom"; 
 import { MoreVert } from "@mui/icons-material";
 import { useState } from "react";
 import type { Post } from "../../types/ResponsePost";
@@ -30,11 +31,16 @@ export const PostHeader = ({
 }: PostHeaderProps) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
+  const navigate = useNavigate(); // 👈 hook điều hướng
 
   return (
     <CardHeader
       avatar={
-        <Avatar src={post.author.avatar_url}>
+        <Avatar src={post.author.avatar_url}
+        onClick={(e) => {
+            e.stopPropagation();
+            navigate(`/profile/${post.author_id}`); 
+          }}>
           {post.author.name.charAt(0)}
         </Avatar>
       }
@@ -81,7 +87,7 @@ export const PostHeader = ({
           sx={{ fontWeight: 600 }}
           onClick={(e) => {
             e.stopPropagation();
-            // 👉 bạn có thể gọi mở chi tiết post ở đây
+            navigate(`/profile/${post.author_id}`); 
           }}
         >
           {post.author.name}

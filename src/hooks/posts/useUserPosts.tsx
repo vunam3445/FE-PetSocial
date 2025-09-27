@@ -19,14 +19,10 @@ export function useUserPosts(userId: string, page: number = 1) {
       .then((res) => {
         const postData = res.data.posts;
         if (page === 1) {
-          // Nếu là page đầu tiên thì thay mảng
           setPosts(postData.data || []);
         } else {
-          // Nếu là page tiếp theo thì nối mảng
           setPosts((prev) => [...prev, ...(postData.data || [])]);
         }
-
-        // Xác định còn page nữa không
         setHasMore(postData.current_page < postData.last_page);
       })
       .catch((err) => {
@@ -37,5 +33,6 @@ export function useUserPosts(userId: string, page: number = 1) {
       });
   }, [userId, page]);
 
-  return { posts, loading, error, hasMore };
+  return { posts, loading, error, hasMore, setPosts };
 }
+

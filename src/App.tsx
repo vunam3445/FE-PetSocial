@@ -5,9 +5,12 @@ import { ProfilePage } from "./pages/ProfilePage";
 import { PrivateRoute } from "./routes/PrivateRoute";
 import { Home } from "./pages/Home";
 import { SearchPage } from "./pages/SearchPage";
+import { ChatProvider } from "./Provider/ChatProvider";
 import "./assets/css/login-register.css";
+import { ChatModalsContainer } from "./components/molecules/ChatModalsContainer";
 function App() {
   return (
+    <ChatProvider>
     <Router>
       <Routes>
         <Route path="/login" element={<AuthPage />} />
@@ -18,6 +21,8 @@ function App() {
         </Route>
       </Routes>
     </Router>
+    <ChatModalsContainer />
+    </ChatProvider>
   );
 }
 

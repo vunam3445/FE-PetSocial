@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import type { Post as PostType } from "../../types/ResponsePost";
 import Post from "../molecules/Post";
@@ -9,7 +8,6 @@ import PostDetailModal from "../modals/PostDetailModal";
 import SuccessToast from "../toasts/SuccessToast";
 import ErrorToast from "../toasts/ErrorToast";
 import type { SubmitData } from "../../types/Post";
-import { PostSkeleton } from "../skeleton/PostSkeleton";
 
 interface PostListProps {
   posts: PostType[];
@@ -17,6 +15,7 @@ interface PostListProps {
   onDelete: (postId: string) => Promise<void>;
   onShare: (data: SubmitData) => Promise<void>;
   onCommentAdded?: (postId: string) => void;
+  lastPostRef?: (node: HTMLDivElement | null) => void; // 👈 thêm ref
 }
 
 export const ListPost = ({
@@ -25,6 +24,7 @@ export const ListPost = ({
   onDelete,
   onShare,
   onCommentAdded,
+  lastPostRef,
 }: PostListProps) => {
   const [selectedPost, setSelectedPost] = useState<PostType | null>(null);
   const [editModalOpen, setEditModalOpen] = useState(false);
@@ -85,40 +85,46 @@ export const ListPost = ({
   return (
     <div className="space-y-4">
       {posts.length === 0 ? (
-        <div className="p-4 text-center text-gray-500">
-        </div>
+        <div className="p-4 text-center text-gray-500"></div>
       ) : (
-        posts.map((post) => (
-          <div key={post.post_id} className="relative">
-            <Post
-              post={post}
-              onEditPost={() => {
-                setSelectedPost(post);
-                setEditModalOpen(true);
-              }}
-              onDeletePost={() => {
-                setSelectedPost(post);
-                setDeleteModalOpen(true);
-              }}
-              onDetailPost={() => {
-                setSelectedPost(post);
-                setDetailModalOpen(true);
-              }}
-              onSharePost={() => {
-                setSelectedPost(post);
-                setShareModalOpen(true);
-              }}
-              onError={(msg) => setErrorToast({ open: true, text: msg })}
-            />
+        posts.map((post, index) => {
+          const isTrigger = (index + 1) % 7 === 0;
+          return (
+            <div
+              key={post.post_id}
+              className="relative"
+              ref={isTrigger ? lastPostRef : undefined} // 👈 gắn ref vào post 7, 14, 21...
+            >
+              <Post
+                post={post}
+                onEditPost={() => {
+                  setSelectedPost(post);
+                  setEditModalOpen(true);
+                }}
+                onDeletePost={() => {
+                  setSelectedPost(post);
+                  setDeleteModalOpen(true);
+                }}
+                onDetailPost={() => {
+                  setSelectedPost(post);
+                  setDetailModalOpen(true);
+                }}
+                onSharePost={() => {
+                  setSelectedPost(post);
+                  setShareModalOpen(true);
+                }}
+                onError={(msg) => setErrorToast({ open: true, text: msg })}
+              />
 
-            {/* 👇 Overlay khi đang update post */}
-            {updatingPostId === post.post_id && (
-              <div className="absolute inset-0 z-10 flex items-center justify-center bg-black bg-opacity-40">
-                <div className="w-8 h-8 border-4 border-white rounded-full border-t-transparent animate-spin"></div>
-              </div>
-            )}
-          </div>
-        ))
+              {/* 👇 Overlay khi đang update post */}
+              {updatingPostId === post.post_id && (
+                <div className="absolute inset-0 z-10 flex items-center justify-center bg-black bg-opacity-40">
+                  <div className="w-8 h-8 border-4 border-white rounded-full border-t-transparent animate-spin"></div>
+                </div>
+              )}
+            </div>
+          );
+        })
       )}
 
       {editModalOpen && selectedPost && (
@@ -166,4 +172,3 @@ export const ListPost = ({
     </div>
   );
 };
-

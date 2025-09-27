@@ -5,6 +5,8 @@ import { useFollow } from "../../hooks/follow/useFollow";
 import { useUnfollow } from "../../hooks/follow/useUnfollow";
 import ErrorToast from "../toasts/ErrorToast";
 import useUserId from "../../hooks/auth/useUserId";
+import { useCreateConversation } from "../../hooks/chat/useCreateConversation";
+import { useChat } from "../../contexts/ChatContext";
 
 export const Profileheader = ({
   name,
@@ -20,11 +22,12 @@ export const Profileheader = ({
   const [openModal, setOpenModal] = useState(false);
   const [nameUser, setNameUser] = useState<string>(name);
   const [toastOpen, setToastOpen] = useState(false);
+  const { createConversation } = useCreateConversation();
   const [isFollowingState, setIsFollowingState] =
     useState<boolean>(isFollowing);
   const { id } = useParams();
   const isOwner = useUserId(id);
-
+  const { openConversation } = useChat(); // 👈 thêm
   const { follow, loading, error } = useFollow();
   const {
     unfollow,
@@ -59,19 +62,49 @@ export const Profileheader = ({
       setIsFollowingState(false);
     }
   };
+  const handleMessage = async () => {
+  if (!id) return;
+  try {
+    const res = await createConversation({ participant_ids: [id] });
+    const conv = res.data;
+    console.log("API trả về conv:", conv);
+
+    if (conv) {
+      const currentUserId = localStorage.getItem("user_id");
+      const other = conv.participants.find(
+        (p: any) => p.user_id !== currentUserId
+      );
+
+      const newConv = {
+        id: conv.conversation_id,
+        title: conv.name || other?.name || "Cuộc trò chuyện",
+        avatarUrl: other?.avatar_url || "/default-avatar.png",
+      };
+
+      console.log("Mở modal với:", newConv);
+      openConversation(newConv);
+    }
+  } catch (error) {
+    console.error("Failed to create or get conversation:", error);
+  }
+};
+
+
   return (
     <div className="px-6 pt-20 pb-4 bg-white rounded-b-lg shadow-sm md:px-8">
       <div className="flex flex-col md:flex-row md:items-end md:justify-between">
         <div className="mb-4 md:mb-0">
           <div className="flex items-center space-x-2">
             <h1 className="text-3xl font-bold text-gray-900">{nameUser}</h1>
-            {isOwner &&(<button
-              onClick={hanleEdit}
-              className="p-1 text-gray-500 rounded-full hover:bg-gray-200"
-              title="Edit name"
-            >
-              <i className="fas fa-edit"></i>
-            </button>)}
+            {isOwner && (
+              <button
+                onClick={hanleEdit}
+                className="p-1 text-gray-500 rounded-full hover:bg-gray-200"
+                title="Edit name"
+              >
+                <i className="fas fa-edit"></i>
+              </button>
+            )}
           </div>
           <div className="flex items-center mt-2 space-x-4 text-sm text-gray-500">
             <span>
@@ -104,7 +137,10 @@ export const Profileheader = ({
               </button>
             )}
 
-            <button className="px-6 py-2 font-medium text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300">
+            <button
+              className="px-6 py-2 font-medium text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300"
+              onClick={handleMessage}
+            >
               <i className="mr-2 fas fa-comment"></i>Nhắn tin
             </button>
           </div>

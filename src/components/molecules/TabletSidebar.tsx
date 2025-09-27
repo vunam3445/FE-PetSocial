@@ -3,7 +3,6 @@ import TabletNavItem from '../atoms/TabletNavItem';
 
 const TabletSidebar: React.FC = () => {
   const userId = localStorage.getItem('user_id') || '';
-  console.log("User ID in TabletSidebar:", userId); // Debug log to check userId
   const navigationItems = [
     { icon: '👥', href: '/', label: 'Feeds' },
     { icon: '👥', href: `/profile/${userId}`, label: 'Profile' },

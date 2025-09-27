@@ -1,11 +1,19 @@
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { ChatModal } from "../modals/ChatModal";
 
 export const Header = () => {
   const [params] = useSearchParams();
   const [keyword, setKeyword] = useState("");
   const navigate = useNavigate();
-  const avatarUrl = localStorage.getItem("avatar_url") ;
+  const avatarUrl = localStorage.getItem("avatar_url");
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const user_id = localStorage.getItem("user_id") || "";
+    const goToProfile = () => {
+    if (user_id) {
+      navigate(`/profile/${user_id}`);
+    }
+  };
   // đồng bộ keyword trong state với URL mỗi khi thay đổi
   useEffect(() => {
     const kw = params.get("keyword") || "";
@@ -17,7 +25,9 @@ export const Header = () => {
     if (!keyword.trim()) return;
     const currentType = params.get("type") || "post";
 
-  navigate(`/search?type=${currentType}&keyword=${encodeURIComponent(keyword)}`);
+    navigate(
+      `/search?type=${currentType}&keyword=${encodeURIComponent(keyword)}`
+    );
   };
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200 shadow-sm">
@@ -79,7 +89,7 @@ export const Header = () => {
               </svg>
             </button>
 
-            <button className="relative hidden p-2 rounded-lg hover:bg-gray-100 sm:block">
+            {/* <button className="relative hidden p-2 rounded-lg hover:bg-gray-100 sm:block">
               <svg
                 className="w-6 h-6 text-gray-600"
                 fill="none"
@@ -96,9 +106,12 @@ export const Header = () => {
               <span className="absolute flex items-center justify-center w-4 h-4 text-xs text-white bg-red-500 rounded-full -top-1 -right-1">
                 3
               </span>
-            </button>
+            </button> */}
 
-            <button className="relative hidden p-2 rounded-lg hover:bg-gray-100 sm:block">
+            <button
+              className="relative hidden p-2 rounded-lg hover:bg-gray-100 sm:block"
+              onClick={() => setIsChatOpen(!isChatOpen)}
+            >
               <svg
                 className="w-6 h-6 text-gray-600"
                 fill="none"
@@ -112,19 +125,21 @@ export const Header = () => {
                   d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
                 ></path>
               </svg>
-              <span className="absolute flex items-center justify-center w-4 h-4 text-xs text-white bg-green-500 rounded-full -top-1 -right-1">
+              {/* <span className="absolute flex items-center justify-center w-4 h-4 text-xs text-white bg-green-500 rounded-full -top-1 -right-1">
                 2
-              </span>
+              </span> */}
             </button>
 
             <div className="relative">
-              <button className="flex items-center p-1 space-x-2 rounded-lg hover:bg-gray-100">
+              <button className="flex items-center p-1 space-x-2 rounded-lg hover:bg-gray-100"
+              onClick={goToProfile}
+              >
                 <img
                   src={avatarUrl || "https://via.placeholder.com/150"}
                   alt="Profile"
                   className="w-8 h-8 rounded-full"
                 />
-                <svg
+                {/* <svg
                   className="hidden w-4 h-4 text-gray-600 sm:block"
                   fill="none"
                   stroke="currentColor"
@@ -136,7 +151,7 @@ export const Header = () => {
                     strokeWidth="2"
                     d="M19 9l-7 7-7-7"
                   ></path>
-                </svg>
+                </svg> */}
               </button>
 
               <div
@@ -175,6 +190,12 @@ export const Header = () => {
           </div>
         </div>
       </div>
+      {isChatOpen && (
+        <ChatModal
+          open={isChatOpen}
+          onClose={() => setIsChatOpen(false)}
+        />
+      )}
     </header>
   );
 };

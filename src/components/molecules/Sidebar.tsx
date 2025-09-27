@@ -23,7 +23,6 @@ const Sidebar: React.FC = () => {
             icon={item.icon}
             label={item.label}
             href={item.href}
-            isActive={item.isActive}
           />
         ))}
       </nav>

@@ -1,3 +1,4 @@
+// hooks/posts/useAllPost.ts
 import { useState, useEffect } from "react";
 import type { Post, PaginatedPostsResponse } from "../../types/ResponsePost";
 import api from "../../lib/axios";
@@ -16,15 +17,13 @@ export function useAllPosts(page: number = 1) {
       .get<PaginatedPostsResponse>(`/posts?page=${page}`)
       .then((res) => {
         const postData = res.data.posts;
+
         if (page === 1) {
-          // ✅ Nếu là page đầu tiên → thay mới mảng
-          setPosts(postData.data || []);
+          setPosts(postData.data || []); // reset khi load page 1
         } else {
-          // ✅ Nếu là page sau → nối thêm vào mảng cũ
-          setPosts((prev) => [...prev, ...(postData.data || [])]);
+          setPosts((prev) => [...prev, ...(postData.data || [])]); // nối thêm khi page > 1
         }
 
-        // ✅ Kiểm tra còn trang nữa không
         setHasMore(postData.current_page < postData.last_page);
       })
       .catch((err) => {
@@ -35,5 +34,5 @@ export function useAllPosts(page: number = 1) {
       });
   }, [page]);
 
-  return { posts, loading, error, hasMore };
+  return { posts, setPosts, loading, error, hasMore };
 }
