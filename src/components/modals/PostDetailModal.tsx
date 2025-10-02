@@ -1,4 +1,3 @@
-
 import { Modal, Box, IconButton, useMediaQuery, useTheme } from "@mui/material";
 import { useState } from "react";
 import ExpandableCaption from "../atoms/ExpandableCaption";
@@ -8,16 +7,20 @@ import type { Post } from "../../types/ResponsePost";
 import { useCreateComment } from "../../hooks/posts/useCreateComment";
 import { useComments } from "../../hooks/posts/useComment";
 import CommentSection from "../atoms/CommentSection";
-import type {  CommentRes } from "../../types/Comment";
+import type { CommentRes } from "../../types/Comment";
 
 interface Props {
   post: Post;
   open: boolean;
   onClose: () => void;
   onCommentAdded?: (postId: string) => void; // 👈 thêm prop mới
-
 }
-export default function PostDetailModal({ post, open, onClose, onCommentAdded }: Props) {
+export default function PostDetailModal({
+  post,
+  open,
+  onClose,
+  onCommentAdded,
+}: Props) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const [selectedMediaIndex, setSelectedMediaIndex] = useState(0);
@@ -27,7 +30,9 @@ export default function PostDetailModal({ post, open, onClose, onCommentAdded }:
 
   // ✅ Nếu post là share thì hiển thị post được share
   const displayPost = post.shared_post ?? post;
-  const sortedMedia = [...(displayPost.media || [])].sort((a, b) => a.order - b.order);
+  const sortedMedia = [...(displayPost.media || [])].sort(
+    (a, b) => a.order - b.order
+  );
 
   const handleAddComment = async (text: string) => {
     try {
@@ -35,7 +40,6 @@ export default function PostDetailModal({ post, open, onClose, onCommentAdded }:
       if (newComment) {
         setLocalComments((prev) => [newComment, ...prev]);
         onCommentAdded?.(post.post_id); // 👈 báo cho ListPost biết
-
       }
     } catch (err) {
       console.error("Failed to add comment:", err);
@@ -67,6 +71,9 @@ export default function PostDetailModal({ post, open, onClose, onCommentAdded }:
             right: 16,
             bgcolor: "rgba(0,0,0,0.5)",
             color: "white",
+            borderRadius: "50%", // ép thành hình tròn
+            width: 40, // đặt chiều rộng
+            height: 40, // đặt chiều cao = width
             "&:hover": { bgcolor: "rgba(0,0,0,0.7)" },
           }}
         >
@@ -79,12 +86,16 @@ export default function PostDetailModal({ post, open, onClose, onCommentAdded }:
             selectedIndex={selectedMediaIndex}
             onPrev={() =>
               setSelectedMediaIndex(
-                selectedMediaIndex === 0 ? sortedMedia.length - 1 : selectedMediaIndex - 1
+                selectedMediaIndex === 0
+                  ? sortedMedia.length - 1
+                  : selectedMediaIndex - 1
               )
             }
             onNext={() =>
               setSelectedMediaIndex(
-                selectedMediaIndex === sortedMedia.length - 1 ? 0 : selectedMediaIndex + 1
+                selectedMediaIndex === sortedMedia.length - 1
+                  ? 0
+                  : selectedMediaIndex + 1
               )
             }
           />
@@ -93,7 +104,10 @@ export default function PostDetailModal({ post, open, onClose, onCommentAdded }:
         <Box
           sx={{
             flex: isMobile ? 1 : sortedMedia.length > 0 ? "2" : "unset",
-            borderLeft: isMobile || sortedMedia.length === 0 ? "none" : "1px solid #e4e6ea",
+            borderLeft:
+              isMobile || sortedMedia.length === 0
+                ? "none"
+                : "1px solid #e4e6ea",
             display: "flex",
             flexDirection: "column",
             width: sortedMedia.length === 0 ? "600px" : "auto",
@@ -101,8 +115,13 @@ export default function PostDetailModal({ post, open, onClose, onCommentAdded }:
           }}
         >
           <Box sx={{ p: 3, borderBottom: "1px solid #e4e6ea" }}>
-            <PostHeader author={displayPost.author} createdAt={displayPost.updated_at} />
-            {displayPost.caption && <ExpandableCaption caption={displayPost.caption} />}
+            <PostHeader
+              author={displayPost.author}
+              createdAt={displayPost.updated_at}
+            />
+            {displayPost.caption && (
+              <ExpandableCaption caption={displayPost.caption} />
+            )}
           </Box>
 
           <Box sx={{ flex: 1, p: 3, minHeight: 0 }}>
@@ -117,4 +136,3 @@ export default function PostDetailModal({ post, open, onClose, onCommentAdded }:
     </Modal>
   );
 }
-

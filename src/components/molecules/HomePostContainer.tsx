@@ -1,15 +1,26 @@
 // components/posts/HomePostContainer.tsx
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { useAllPosts } from "../../hooks/posts/useAllPost";
 import { ListPost } from "./ListPost";
 import { usePostActions } from "../../hooks/posts/usePostActions";
 import { PostSkeleton } from "../skeleton/PostSkeleton";
-
-const HomePostContainer = () => {
+import type { Post } from "../../types/ResponsePost";
+interface HomePostContainerProps {
+  newPost?: Post;
+}
+const HomePostContainer = ({ newPost }: HomePostContainerProps) => {
   const [page, setPage] = useState(1);
   const { posts, setPosts, loading, error, hasMore } = useAllPosts(page);
   const { handleUpdate, handleDelete, handleShare } = usePostActions(setPosts);
-
+  useEffect(() => {
+    if (newPost) {
+      setPosts((prev) => {
+        // tránh thêm trùng
+        if (prev.some((p) => p.post_id === newPost.post_id)) return prev;
+        return [newPost, ...prev];
+      });
+    }
+  }, [newPost, setPosts]);
   // IntersectionObserver
   const observer = useRef<IntersectionObserver | null>(null);
   const lastPostRef = useCallback(

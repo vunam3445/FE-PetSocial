@@ -11,10 +11,8 @@ import { useNavigate } from "react-router-dom";
 import { MoreVert } from "@mui/icons-material";
 import { useState } from "react";
 import type { Post } from "../../types/ResponsePost";
-import relativeTime from "dayjs/plugin/relativeTime";
-import dayjs from "dayjs";
+import dayjs from "../../lib/dayjs"; // 👈 import từ file config
 
-dayjs.extend(relativeTime);
 
 interface PostHeaderProps {
   post: Post;

@@ -53,7 +53,7 @@ export const ConversationMessages = ({
 
     // Kiểm tra nếu user đang ở gần bottom (trong vòng 100px)
     const isNearBottom = scrollHeight - scrollTop - clientHeight < 100;
-    
+
     // Chỉ auto-scroll khi user ở gần bottom
     setShouldScrollToBottom(isNearBottom);
 
@@ -65,44 +65,39 @@ export const ConversationMessages = ({
     // Load thêm tin nhắn cũ khi scroll đến gần đầu trang
     if (scrollTop < 200 && !isLoading && hasMore) {
       setIsLoading(true);
-      
+
       // Lưu vị trí scroll hiện tại để maintain scroll position
       const previousScrollHeight = scrollHeight;
-      
+
       try {
         const nextPage = page + 1;
         const response = await fetchMessages(conversationId, nextPage);
-        
-        if (response && response.length === 0) {
+        console.log(response);
+        if (!response || response.length === 0) {
           setHasMore(false);
-        } else {
-          setPage(nextPage);
-          
-          // Maintain scroll position sau khi load thêm messages
-          setTimeout(() => {
-            const newScrollHeight = target.scrollHeight;
-            const heightDifference = newScrollHeight - previousScrollHeight;
-            target.scrollTop = scrollTop + heightDifference;
-          }, 0);
+          return; // ❌ stop ở đây, không load nữa
         }
+
+        // Nếu số lượng tin nhắn < pageSize thì cũng hết luôn
+        const PAGE_SIZE = 15; // ví dụ 20 tin / trang
+        if (response.length < PAGE_SIZE) {
+          setHasMore(false);
+        }
+
+        setPage(nextPage);
+
+        // giữ nguyên phần maintain scroll
+        setTimeout(() => {
+          const newScrollHeight = target.scrollHeight;
+          const heightDifference = newScrollHeight - previousScrollHeight;
+          target.scrollTop = scrollTop + heightDifference;
+        }, 0);
       } catch (error) {
         console.error("Error loading more messages:", error);
       } finally {
         setIsLoading(false);
       }
     }
-
-    // Alternative: Load khi đến tin nhắn thứ 10 từ trên xuống
-    // const messageElements = target.querySelectorAll('[data-message]');
-    // if (messageElements.length >= 10) {
-    //   const tenthMessage = messageElements[9] as HTMLElement;
-    //   const messageRect = tenthMessage.getBoundingClientRect();
-    //   const containerRect = target.getBoundingClientRect();
-    //   
-    //   if (messageRect.top <= containerRect.top + 100 && !isLoading && hasMore) {
-    //     // Load more messages
-    //   }
-    // }
   };
 
   return (
@@ -116,7 +111,7 @@ export const ConversationMessages = ({
           Đang tải tin nhắn cũ...
         </div>
       )}
-      
+
       {conversationMessages.map((msg, index) => (
         <MessageItem
           key={msg.message_id}
@@ -130,11 +125,9 @@ export const ConversationMessages = ({
           data-message={index}
         />
       ))}
-      
+
       {/* Scroll target */}
       <div ref={bottomRef} />
-      
-      
     </div>
   );
 };

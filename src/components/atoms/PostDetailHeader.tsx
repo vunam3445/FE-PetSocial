@@ -1,17 +1,7 @@
 import { Avatar, Box, Typography } from "@mui/material";
 import type { Author } from "../../types/ResponsePost";
+import dayjs from "../../lib/dayjs"; // 👈 import file bạn đã config
 
- function formatTimeAgo(dateString: string): string {
-  const date = new Date(dateString);
-  const now = new Date();
-  const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-
-  if (diffInSeconds < 60) return `${diffInSeconds}s`;
-  if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m`;
-  if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h`;
-  if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)}d`;
-  return `${Math.floor(diffInSeconds / 604800)}w`;
-}
 export default function PostDetailHeader({
   author,
   createdAt,
@@ -29,7 +19,7 @@ export default function PostDetailHeader({
           {author.name}
         </Typography>
         <Typography variant="body2" color="text.secondary">
-          {formatTimeAgo(createdAt)}
+          {dayjs(createdAt).fromNow()} {/* 👈 hiển thị dạng "3 phút trước" */}
         </Typography>
       </Box>
     </Box>

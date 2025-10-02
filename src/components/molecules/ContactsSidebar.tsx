@@ -28,7 +28,7 @@ const ContactsSidebar: React.FC = () => {
       setContacts(mapped);
     };
     loadContacts();
-  }, [fetchRecentConversations, currentUserId]);
+  }, [ currentUserId]);
 
   // 👉 Khi click vào contact
   const handleMessage = async (contact: any) => {

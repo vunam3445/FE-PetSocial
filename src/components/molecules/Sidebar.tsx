@@ -6,7 +6,7 @@ const Sidebar: React.FC = () => {
   const navigationItems = [
     { icon: '👥', label: 'Feeds', href: '/' },
     { icon: '👤', label: 'Profile', href: `/profile/${userId}` }, // đổi thành route đúng
-    { icon: '🎥', label: 'Videos', href: '/videos' },
+    // { icon: '🎥', label: 'Videos', href: '/videos' },
     // { icon: '🛒', label: 'Marketplace', href: '/marketplace' },
     // { icon: '📅', label: 'Events', href: '/events' },
     // { icon: '🐕', label: 'Pets', href: '/pets', isActive: true },

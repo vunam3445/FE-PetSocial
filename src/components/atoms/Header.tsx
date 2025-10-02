@@ -1,5 +1,5 @@
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { ChatModal } from "../modals/ChatModal";
 
 export const Header = () => {
@@ -9,7 +9,9 @@ export const Header = () => {
   const avatarUrl = localStorage.getItem("avatar_url");
   const [isChatOpen, setIsChatOpen] = useState(false);
   const user_id = localStorage.getItem("user_id") || "";
-    const goToProfile = () => {
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement | null>(null);
+  const goToProfile = () => {
     if (user_id) {
       navigate(`/profile/${user_id}`);
     }
@@ -29,6 +31,22 @@ export const Header = () => {
       `/search?type=${currentType}&keyword=${encodeURIComponent(keyword)}`
     );
   };
+  const handleLogout = () => {
+    localStorage.clear();
+    navigate("/login");
+  };
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200 shadow-sm">
       <div className="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
@@ -131,16 +149,21 @@ export const Header = () => {
             </button>
 
             <div className="relative">
-              <button className="flex items-center p-1 space-x-2 rounded-lg hover:bg-gray-100"
-              onClick={goToProfile}
+              <button
+                className="flex items-center p-1 space-x-2 rounded-lg hover:bg-gray-100"
+                onClick={goToProfile}
               >
                 <img
                   src={avatarUrl || "https://via.placeholder.com/150"}
                   alt="Profile"
                   className="w-8 h-8 rounded-full"
                 />
-                {/* <svg
-                  className="hidden w-4 h-4 text-gray-600 sm:block"
+                <svg
+                  onClick={(e) => {
+                    e.stopPropagation(); // chặn click lan lên button cha
+                    setIsDropdownOpen(!isDropdownOpen);
+                  }}
+                  className="hidden w-4 h-4 text-gray-600 cursor-pointer sm:block"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -151,50 +174,39 @@ export const Header = () => {
                     strokeWidth="2"
                     d="M19 9l-7 7-7-7"
                   ></path>
-                </svg> */}
+                </svg>
               </button>
 
-              <div
-                id="profileDropdown"
-                className="absolute right-0 hidden w-48 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg"
-              >
-                <div className="py-2">
-                  <a
-                    href="#"
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+              {/* Dropdown bọc trong relative */}
+              {isDropdownOpen && (
+                <div
+                  ref={dropdownRef}
+                  className="absolute right-0 w-40 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg"
+                >
+                  <button
+                    onClick={handleLogout}
+                    className="w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-100"
                   >
-                    My Profile
-                  </a>
-                  <a
-                    href="#"
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                  >
-                    Settings
-                  </a>
-                  <a
-                    href="#"
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                  >
-                    Help
-                  </a>
-                  <hr className="my-1" />
-                  <a
-                    href="#"
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                  >
-                    Sign Out
-                  </a>
+                    Đăng xuất
+                  </button>
                 </div>
-              </div>
+              )}
             </div>
           </div>
         </div>
       </div>
+      {/* {isDropdownOpen && (
+        <div className="absolute right-0 w-40 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg">
+          <button
+            onClick={handleLogout}
+            className="w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-100"
+          >
+            Đăng xuất
+          </button>
+        </div>
+      )} */}
       {isChatOpen && (
-        <ChatModal
-          open={isChatOpen}
-          onClose={() => setIsChatOpen(false)}
-        />
+        <ChatModal open={isChatOpen} onClose={() => setIsChatOpen(false)} />
       )}
     </header>
   );
