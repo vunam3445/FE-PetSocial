@@ -5,13 +5,15 @@ interface NavigationItemProps {
   label: string;
   href: string;
   isActive?: boolean;
+  onClick?: () => void;
 }
 
 const NavigationItem: React.FC<NavigationItemProps> = ({ 
   icon, 
   label, 
   href, 
-  isActive = false 
+  isActive = false,
+  onClick
 }) => {
   const baseClasses = "flex items-center p-3 space-x-3 rounded-lg nav-item";
   const activeClasses = isActive 
@@ -19,7 +21,7 @@ const NavigationItem: React.FC<NavigationItemProps> = ({
     : "text-gray-700";
 
   return (
-    <a href={href} className={`${baseClasses} ${activeClasses}`}>
+    <a href={href} className={`${baseClasses} ${activeClasses}`} onClick={onClick}>
       <span className="text-xl">{icon}</span>
       <span className="font-medium">{label}</span>
     </a>

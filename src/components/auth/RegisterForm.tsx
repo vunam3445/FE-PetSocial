@@ -80,7 +80,6 @@ export const RegisterForm = ({
         }
       );
 
-      alert("Đăng ký thành công!");
       onSuccess(form.email);
     } catch (error: any) {
       console.error("Xác thực thất bại:", error);

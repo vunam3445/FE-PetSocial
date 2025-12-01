@@ -33,7 +33,6 @@ export const ListPost = ({
   const [detailModalOpen, setDetailModalOpen] = useState(false);
 
   const [updatingPostId, setUpdatingPostId] = useState<string | null>(null);
-
   const [successToast, setSuccessToast] = useState<{
     open: boolean;
     text: string;

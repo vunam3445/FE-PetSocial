@@ -7,12 +7,11 @@ import {
   CardHeader,
   Box,
 } from "@mui/material";
-import { useNavigate } from "react-router-dom"; 
+import { useNavigate } from "react-router-dom";
 import { MoreVert } from "@mui/icons-material";
 import { useState } from "react";
 import type { Post } from "../../types/ResponsePost";
 import dayjs from "../../lib/dayjs"; // 👈 import từ file config
-
 
 interface PostHeaderProps {
   post: Post;
@@ -34,12 +33,21 @@ export const PostHeader = ({
   return (
     <CardHeader
       avatar={
-        <Avatar src={post.author.avatar_url}
-        onClick={(e) => {
+        <Avatar
+          src={
+            post.pet?.avatar_url ? post.pet.avatar_url : post.author.avatar_url
+          }
+          onClick={(e) => {
             e.stopPropagation();
-            navigate(`/profile/${post.author_id}`); 
-          }}>
-          {post.author.name.charAt(0)}
+            // navigate(`/profile/${post.author_id}`);
+            if (post.pet) {
+              navigate(`/pet-health/${post.pet.pet_id}`);
+            } else {
+              navigate(`/profile/${post.author_id}`);
+            }
+          }}
+        >
+          {post.pet ? post.pet.name.charAt(0) : post.author.name.charAt(0)}
         </Avatar>
       }
       action={
@@ -85,10 +93,15 @@ export const PostHeader = ({
           sx={{ fontWeight: 600 }}
           onClick={(e) => {
             e.stopPropagation();
-            navigate(`/profile/${post.author_id}`); 
+            // navigate(`/profile/${post.author_id}`);
+            if (post.pet) {
+              navigate(`/pet-health/${post.pet.pet_id}`);
+            } else {
+              navigate(`/profile/${post.author_id}`);
+            }
           }}
         >
-          {post.author.name}
+          {post.pet ? post.pet.name : post.author.name}
         </Typography>
       }
       subheader={

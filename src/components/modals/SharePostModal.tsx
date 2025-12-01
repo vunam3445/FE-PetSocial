@@ -135,8 +135,8 @@ const SharePostModal: React.FC<SharePostModalProps> = ({
             {/* Avatar + name */}
             <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
               <img
-                src={post.author.avatar_url}
-                alt={post.author.name}
+                src={post.pet ? post.pet.avatar_url : post.author.avatar_url}
+                alt={post.pet ? post.pet.name : post.author.name}
                 style={{
                   width: 36,
                   height: 36,
@@ -146,7 +146,7 @@ const SharePostModal: React.FC<SharePostModalProps> = ({
                 }}
               />
               <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
-                {post.author.name}
+                {post.pet ? post.pet.name : post.author.name}
               </Typography>
             </Box>
 

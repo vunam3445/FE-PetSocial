@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import CreatePostModal from "../modals/CreatePostModal";
 import { useCreatePost } from "../../hooks/posts/useCreatePost";
 import type { SubmitData, MediaItem } from "../../types/Post";
 import ErrorToast from "../toasts/ErrorToast";
+import { usePets } from "../../hooks/profile/usePets";
 export const CreatePost = ({
   onPostCreated,
 }: {
@@ -11,6 +12,19 @@ export const CreatePost = ({
 }) => {
   const [openModel, setOpenModal] = useState(false);
   const { createPost, loading, error } = useCreatePost();
+  const [pets, setPets] = useState([]);
+
+  const userId = localStorage.getItem("user_id") || "";
+  const { getPets, loading: petsLoading, error: petsError } = usePets(userId);
+  useEffect(() => {
+    const fetchPets = async () => {
+      const petsData = await getPets();
+      setPets(petsData);
+    };
+    fetchPets();
+  }, []);
+
+
   // 🆕 Lấy thông tin user từ localStorage
   const avatarUrl = localStorage.getItem("avatar_url") || "";
   const userName = localStorage.getItem("user_name") || "Bạn";
@@ -21,11 +35,13 @@ export const CreatePost = ({
   };
 
   const handleSubmit = async (formDataFromModal: {
+    author_id: string;
     caption?: string;
     visibility?: string;
     shared_post_id?: string;
     group_id?: string;
     media?: MediaItem[];
+    pet_id?: string;
   }) => {
 // nếu cả caption rỗng VÀ media trống thì mới báo lỗi
 if ((!formDataFromModal.caption || formDataFromModal.caption.trim() === "") 
@@ -34,16 +50,18 @@ if ((!formDataFromModal.caption || formDataFromModal.caption.trim() === "")
   setOpenToast(true);
   return;
 }
-
+    console.log("Form data from modal:", formDataFromModal);
     try {
       const submitData: SubmitData = {
+        author_id: userId,
         caption: formDataFromModal.caption,
         visibility: formDataFromModal.visibility,
         shared_post_id: formDataFromModal.shared_post_id,
         group_id: formDataFromModal.group_id,
         media: formDataFromModal.media,
+        pet_id: formDataFromModal.pet_id,
       };
-
+      console.log("Submit data prepared:", submitData);
       const res = await createPost(submitData);
       if (res) {
         onPostCreated(res);
@@ -98,6 +116,7 @@ if ((!formDataFromModal.caption || formDataFromModal.caption.trim() === "")
           onSubmit={handleSubmit}
           avatarURL={avatarUrl}
           userName={userName}
+          pets={pets}
         />
       )}
       <ErrorToast

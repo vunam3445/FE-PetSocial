@@ -40,7 +40,7 @@ const ConfirmDelete: React.FC<ConfirmDeleteProps> = ({
         color: 'text.primary',
         pb: 2
       }}>
-        Bạn có chắc chắn muốn xoá bài viết này không?
+        Bạn có chắc chắn muốn xoá này không?
       </DialogTitle>
       
       {/* Middle Question */}
@@ -76,7 +76,7 @@ const ConfirmDelete: React.FC<ConfirmDeleteProps> = ({
             fontWeight: 500
           }}
         >
-          Yes
+          Có
         </Button>
         <Button 
           onClick={onClose}
@@ -88,7 +88,7 @@ const ConfirmDelete: React.FC<ConfirmDeleteProps> = ({
             fontWeight: 500
           }}
         >
-          No
+          Không
         </Button>
       </DialogActions>
     </Dialog>
