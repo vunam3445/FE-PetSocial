@@ -27,7 +27,11 @@ export type Tag = {
     updated_at: string;
   };
 };
-
+export interface Pet {
+  pet_id: string;
+  name: string;
+  avatar_url?: string;
+}
 export type Post = {
   post_id: string;
   author_id: string;
@@ -37,11 +41,10 @@ export type Post = {
   group_id: string | null;
   created_at: string;
   updated_at: string;
-
   media: Media[];
   author: Author;
   tags: Tag[];
-
+  pet?: Pet | null;
   likes_count: number;
   is_liked: number;
   comments_count: number;

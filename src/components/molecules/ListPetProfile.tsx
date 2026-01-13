@@ -11,6 +11,7 @@ export const ListPetProfile = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const isOwner = useUserId(id);
+  
   const fetchPets = async () => {
     try {
       if (!id) {

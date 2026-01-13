@@ -12,23 +12,28 @@ export const CategorySidebar: React.FC<{ onTypeChange: (type: string) => void }>
         <nav className="space-y-2">
           <CategoryButton
             icon="📝"
-            label="Posts"
+            label="Bài viết"
             active={currentType === "post"}
             onClick={() => onTypeChange("post")}
           />
           <CategoryButton
             icon="👥"
-            label="Users"
+            label="Người dùng"
             active={currentType === "user"}
             onClick={() => onTypeChange("user")}
           />
           <CategoryButton
             icon="🐕"
-            label="Pets"
+            label="Thú cưng"
             active={currentType === "pet"}
             onClick={() => onTypeChange("pet")}
           />
-          
+          <CategoryButton
+            icon="🏘️" 
+            label="Nhóm"
+            active={currentType === "group"}
+            onClick={() => onTypeChange("group")}
+          />
         </nav>
       </div>
     </div>

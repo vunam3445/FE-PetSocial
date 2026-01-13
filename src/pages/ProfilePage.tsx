@@ -23,7 +23,7 @@ export const ProfilePage = () => {
   const { id } = useParams(); // nếu id null => chính mình
   const isOwner = useUserId(id);
   const { user, pets, loading, error } = useUserProfile(id);
-  const [activeTab, setActiveTab] = useState("Posts");
+  const [activeTab, setActiveTab] = useState("Bài viết");
   const [avatarUpdate, setAvatarUpdate] = useState<string>("");
   const [newPost, setNewPost] = useState<Post>();
   const [coverUpdate, setCoverUpdate] = useState<string>("");
@@ -34,7 +34,7 @@ export const ProfilePage = () => {
     }
   }, [user?.cover_url]);
   useEffect(() => {
-    setActiveTab("Posts");
+    setActiveTab("Bài viết");
   }, [id]);
   if (loading) return <ProfileSkeleton />;
   if (error || !user) return <div>{error ?? "Không tìm thấy người dùng."}</div>;
@@ -59,7 +59,7 @@ export const ProfilePage = () => {
           isFollowing={user.is_following}
         />
         <NavTabs activeTab={activeTab} onTabChange={setActiveTab} />
-        {activeTab === "Posts" && (
+        {activeTab === "Bài viết" && (
           <div className="grid grid-cols-1 gap-6 mt-6 lg:grid-cols-3">
             <ProfileLeftSidebar
               bio={user.bio}
@@ -74,22 +74,22 @@ export const ProfilePage = () => {
             </div>
           </div>
         )}
-        {activeTab === "Friends" && (
+        {activeTab === "Bạn bè" && (
           <div className="mt-4">
             <ListFriendProfile />
           </div>
         )}
-        {activeTab === "Videos" && (
+        {activeTab === "Video" && (
           <div className="mt-4">
             <ListVideoProfile />
           </div>
         )}
-        {activeTab === "Photos" && (
+        {activeTab === "Ảnh" && (
           <div className="mt-4">
             <ListImageProfile />
           </div>
         )}
-        {activeTab === "Pets" && (
+        {activeTab === "Thú cưng" && (
           <div className="mt-4">
             <ListPetProfile />
           </div>

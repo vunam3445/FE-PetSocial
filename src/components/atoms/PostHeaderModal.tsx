@@ -7,17 +7,23 @@ import {
   Select,
   MenuItem,
   FormControl,
+  SelectChangeEvent,
 } from "@mui/material";
 import { KeyboardArrowDown, Public, People, Lock } from "@mui/icons-material";
 import { PostTextInput } from "./PostTextInput";
+import type { Pet } from "../../types/Post";
 
 interface PostHeaderProps {
   avatarURL: string;
   userName: string;
   visibility: string;
   onVisibilityChange: (value: string) => void;
-  caption?:string;
+  caption?: string;
   onCaptionChange: (text: string) => void;
+  pets?: Pet[];
+  selectedProfileId?: string;
+  onProfileChange?: (event: SelectChangeEvent<unknown>) => void;
+  originalUser?: { name: string; avatar: string };
 }
 
 interface VisibilityOption {
@@ -31,11 +37,11 @@ const visibilityOptions: VisibilityOption[] = [
     label: "Public",
     icon: <Public fontSize="small" />,
   },
-  {
-    value: "friends",
-    label: "Friends",
-    icon: <People fontSize="small" />,
-  },
+  // {
+  //   value: "friends",
+  //   label: "Friends",
+  //   icon: <People fontSize="small" />,
+  // },
   {
     value: "private",
     label: "Private",
@@ -49,10 +55,11 @@ export const PostHeaderModal: React.FC<PostHeaderProps> = ({
   onVisibilityChange,
   caption,
   onCaptionChange,
+  pets,
+  selectedProfileId,
+  onProfileChange,
+  originalUser,
 }) => {
-
-
-
   return (
     <Box sx={{ px: 3, pt: 2, pb: 1 }}>
       <Box
@@ -129,6 +136,59 @@ export const PostHeaderModal: React.FC<PostHeaderProps> = ({
               ))}
             </Select>
           </FormControl>
+          {pets?.length > 0 && onProfileChange && originalUser && (
+            <Select
+              value={selectedProfileId}
+              onChange={onProfileChange}
+              size="small"
+              variant="standard"
+              disableUnderline
+              sx={{
+                bgcolor: "#e4e6eb", // Màu đậm hơn chút để phân biệt
+                borderRadius: 1,
+                px: 1,
+                fontSize: "0.8rem",
+                fontWeight: 600,
+                height: 24,
+                minWidth: 100, // Đặt độ rộng tối thiểu để tên không bị ép
+                "& .MuiSelect-select": {
+                  py: 0,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 0.5,
+                },
+              }}
+            >
+              {/* Option: User Chính */}
+              <MenuItem value="user">
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                  {/* Avatar nhỏ trong menu dropdown */}
+                  <Avatar
+                    src={originalUser.avatar}
+                    sx={{ width: 20, height: 20 }}
+                  />
+                  <Typography variant="body2" noWrap sx={{ maxWidth: 120 }}>
+                    {originalUser.name} (Tôi)
+                  </Typography>
+                </Box>
+              </MenuItem>
+
+              {/* List Pets */}
+              {pets?.map((pet) => (
+                <MenuItem key={pet.pet_id} value={pet.pet_id}>
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                    <Avatar
+                      src={pet.avatar_url}
+                      sx={{ width: 20, height: 20 }}
+                    ></Avatar>
+                    <Typography variant="body2" noWrap sx={{ maxWidth: 120 }}>
+                      {pet.name}
+                    </Typography>
+                  </Box>
+                </MenuItem>
+              ))}
+            </Select>
+          )}
         </Box>
       </Box>
 

@@ -2,7 +2,6 @@ import { useState } from "react";
 import { Header } from "../components/atoms/Header";
 import ContactsSidebar from "../components/molecules/ContactsSidebar";
 import { CreatePost } from "../components/molecules/CreatePost";
-import { ListPost } from "../components/molecules/ListPost";
 import Sidebar from "../components/molecules/Sidebar";
 import TabletSidebar from "../components/molecules/TabletSidebar";
 import type { Post } from "../types/ResponsePost";

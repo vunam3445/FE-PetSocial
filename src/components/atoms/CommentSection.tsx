@@ -139,9 +139,9 @@ export default function CommentSection({
           zIndex: 1,
         }}
       >
-        <Avatar sx={{ width: 32, height: 32, mr: 1, bgcolor: "primary.main" }}>
+        {/* <Avatar sx={{ width: 32, height: 32, mr: 1, bgcolor: "primary.main" }}>
           U
-        </Avatar>
+        </Avatar> */}
         <TextField
           fullWidth
           variant="standard"
@@ -151,7 +151,19 @@ export default function CommentSection({
           InputProps={{ disableUnderline: true }}
         />
         <IconButton type="submit" disabled={!newComment.trim()} sx={{ ml: 1 }}>
-          <span style={{ fontSize: "18px" }}>📤</span>
+           <svg
+            className="w-5 h-5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
+            />
+          </svg>
         </IconButton>
       </Paper>
 

@@ -7,19 +7,18 @@ import {
   CardHeader,
   Box,
 } from "@mui/material";
+import { useNavigate } from "react-router-dom";
 import { MoreVert } from "@mui/icons-material";
 import { useState } from "react";
 import type { Post } from "../../types/ResponsePost";
-import relativeTime from "dayjs/plugin/relativeTime";
-import dayjs from "dayjs";
-
-dayjs.extend(relativeTime);
+import dayjs from "../../lib/dayjs";
 
 interface PostHeaderProps {
   post: Post;
   isOwner: boolean;
   onEdit: () => void;
   onDelete: () => void;
+  onReport?: () => void;
 }
 
 export const PostHeader = ({
@@ -27,53 +26,79 @@ export const PostHeader = ({
   isOwner,
   onEdit,
   onDelete,
+  onReport,
 }: PostHeaderProps) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
+  const navigate = useNavigate(); // 👈 hook điều hướng
 
   return (
     <CardHeader
       avatar={
-        <Avatar src={post.author.avatar_url}>
-          {post.author.name.charAt(0)}
+        <Avatar
+          src={
+            post.pet?.avatar_url ? post.pet.avatar_url : post.author?.avatar_url
+          }
+          onClick={(e) => {
+            e.stopPropagation();
+            // navigate(`/profile/${post.author_id}`);
+            if (post.pet) {
+              navigate(`/pet-health/${post.pet.pet_id}`);
+            } else {
+              navigate(`/profile/${post.author_id}`);
+            }
+          }}
+        >
+          {post.pet ? post.pet?.name.charAt(0) : post.author?.name.charAt(0)}
         </Avatar>
       }
       action={
-        isOwner && (
-          <>
-            <IconButton
-              onClick={(e) => {
-                e.stopPropagation(); // ✅ chặn click lan ra ngoài
-                setAnchorEl(e.currentTarget);
+        <>
+          {(onReport || isOwner) && (<IconButton
+            onClick={(e) => {
+              e.stopPropagation(); // ✅ chặn click lan ra ngoài
+              setAnchorEl(e.currentTarget);
+            }}
+          >
+            <MoreVert />
+          </IconButton>)}
+          <Menu
+            anchorEl={anchorEl}
+            open={open}
+            onClose={() => setAnchorEl(null)}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {isOwner && (
+              <>
+                <MenuItem
+                  onClick={() => {
+                    onEdit();
+                    setAnchorEl(null); // ✅ đóng menu
+                  }}
+                >
+                  Sửa bài viết
+                </MenuItem>
+                <MenuItem
+                  onClick={() => {
+                    onDelete();
+                    setAnchorEl(null); // ✅ đóng menu
+                  }}
+                >
+                  Xóa bài viết
+                </MenuItem>
+              </>
+            )}
+
+            <MenuItem
+              onClick={() => {
+                onReport();
+                setAnchorEl(null); // ✅ đóng menu
               }}
             >
-              <MoreVert />
-            </IconButton>
-            <Menu
-              anchorEl={anchorEl}
-              open={open}
-              onClose={() => setAnchorEl(null)}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <MenuItem
-                onClick={() => {
-                  onEdit();
-                  setAnchorEl(null); // ✅ đóng menu
-                }}
-              >
-                Sửa bài viết
-              </MenuItem>
-              <MenuItem
-                onClick={() => {
-                  onDelete();
-                  setAnchorEl(null); // ✅ đóng menu
-                }}
-              >
-                Xóa bài viết
-              </MenuItem>
-            </Menu>
-          </>
-        )
+              Báo cáo bài viết
+            </MenuItem>
+          </Menu>
+        </>
       }
       title={
         <Typography
@@ -81,10 +106,15 @@ export const PostHeader = ({
           sx={{ fontWeight: 600 }}
           onClick={(e) => {
             e.stopPropagation();
-            // 👉 bạn có thể gọi mở chi tiết post ở đây
+            // navigate(`/profile/${post.author_id}`);
+            if (post.pet) {
+              navigate(`/pet-health/${post.pet.pet_id}`);
+            } else {
+              navigate(`/profile/${post.author_id}`);
+            }
           }}
         >
-          {post.author.name}
+          {post.pet ? post.pet?.name : post.author?.name}
         </Typography>
       }
       subheader={

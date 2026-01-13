@@ -165,14 +165,14 @@ export default function CommentItem({
           open={Boolean(anchorEl)}
           onClose={() => setAnchorEl(null)}
         >
-          <MenuItem
+          {/* <MenuItem
             onClick={() => {
               setAnchorEl(null);
               onEdit?.(comment.comment_id, comment.content);
             }}
           >
             Sửa bình luận
-          </MenuItem>
+          </MenuItem> */}
           <MenuItem
             onClick={() => {
               setAnchorEl(null);
@@ -210,9 +210,6 @@ export default function CommentItem({
       {/* Input reply */}
       {showReplyInput && (
         <Box sx={{ ml: 5, mb: 1, display: "flex", gap: 1 }}>
-          <Avatar sx={{ width: 24, height: 24, bgcolor: "primary.main" }}>
-            U
-          </Avatar>
           <TextField
             size="small"
             placeholder="Write a reply..."
@@ -229,7 +226,19 @@ export default function CommentItem({
             }}
           />
           <IconButton onClick={handleReplySubmit} disabled={!replyText.trim()}>
-            📤
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
+              />
+            </svg>{" "}
           </IconButton>
         </Box>
       )}
@@ -259,75 +268,79 @@ export default function CommentItem({
 
       {/* Danh sách reply */}
       {showReplies &&
-        [...localReplies, ...replies].filter((r) => !deletedReplies.includes(r.comment_id)) // 👈 lọc bỏ reply đã xoá
-    .map((reply) => (
-          <Box key={reply.comment_id} sx={{ ml: 7, mb: 1 }}>
-            <Box sx={{ display: "flex", gap: 1, position: "relative" }}>
-              <Avatar
-                src={reply.user.avatar_url}
-                sx={{ width: 24, height: 24 }}
-              >
-                {reply.user.name.charAt(0)}
-              </Avatar>
+        [...localReplies, ...replies]
+          .filter((r) => !deletedReplies.includes(r.comment_id)) // 👈 lọc bỏ reply đã xoá
+          .map((reply) => (
+            <Box key={reply.comment_id} sx={{ ml: 7, mb: 1 }}>
+              <Box sx={{ display: "flex", gap: 1, position: "relative" }}>
+                <Avatar
+                  src={reply.user.avatar_url}
+                  sx={{ width: 24, height: 24 }}
+                >
+                  {reply.user.name.charAt(0)}
+                </Avatar>
+                <Box
+                  sx={{
+                    flex: 1,
+                    backgroundColor: "#f0f2f5",
+                    padding: "6px 10px",
+                    borderRadius: "12px",
+                  }}
+                >
+                  <Typography
+                    variant="body2"
+                    sx={{ fontWeight: 600, fontSize: "12px" }}
+                  >
+                    {reply.user.name}
+                  </Typography>
+                  <Typography variant="body2" sx={{ fontSize: "13px" }}>
+                    {reply.content}
+                  </Typography>
+
+                  {/* Nút 3 chấm cho reply */}
+                  <IconButton
+                    size="small"
+                    sx={{ position: "absolute", top: 0, right: 0 }}
+                    onClick={(e) =>
+                      setReplyMenu({
+                        id: reply.comment_id,
+                        el: e.currentTarget,
+                      })
+                    }
+                  >
+                    <MoreVertIcon fontSize="small" />
+                  </IconButton>
+                </Box>
+              </Box>
+
               <Box
                 sx={{
-                  flex: 1,
-                  backgroundColor: "#f0f2f5",
-                  padding: "6px 10px",
-                  borderRadius: "12px",
+                  ml: 7.5,
+                  mt: 0.3,
+                  display: "flex",
+                  gap: 2,
+                  alignItems: "center",
                 }}
               >
-                <Typography
-                  variant="body2"
-                  sx={{ fontWeight: 600, fontSize: "12px" }}
-                >
-                  {reply.user.name}
+                <Typography variant="caption" color="text.secondary">
+                  {formatTimeAgo(reply.created_at)}
                 </Typography>
-                <Typography variant="body2" sx={{ fontSize: "13px" }}>
-                  {reply.content}
-                </Typography>
-
-                {/* Nút 3 chấm cho reply */}
-                <IconButton
+                <Button
                   size="small"
-                  sx={{ position: "absolute", top: 0, right: 0 }}
-                  onClick={(e) =>
-                    setReplyMenu({ id: reply.comment_id, el: e.currentTarget })
-                  }
+                  sx={{
+                    minWidth: "auto",
+                    p: 0,
+                    fontSize: "12px",
+                    fontWeight: 600,
+                    color: "text.secondary",
+                    textTransform: "none",
+                  }}
                 >
-                  <MoreVertIcon fontSize="small" />
-                </IconButton>
+                  Reply
+                </Button>
               </Box>
             </Box>
-
-            <Box
-              sx={{
-                ml: 7.5,
-                mt: 0.3,
-                display: "flex",
-                gap: 2,
-                alignItems: "center",
-              }}
-            >
-              <Typography variant="caption" color="text.secondary">
-                {formatTimeAgo(reply.created_at)}
-              </Typography>
-              <Button
-                size="small"
-                sx={{
-                  minWidth: "auto",
-                  p: 0,
-                  fontSize: "12px",
-                  fontWeight: 600,
-                  color: "text.secondary",
-                  textTransform: "none",
-                }}
-              >
-                Reply
-              </Button>
-            </Box>
-          </Box>
-        ))}
+          ))}
 
       {/* Menu cho reply */}
       <Menu

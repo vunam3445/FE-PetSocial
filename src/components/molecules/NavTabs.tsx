@@ -1,6 +1,6 @@
 import { NavTab } from "../atoms/NavTab";
 
-const Tabs = ["Posts", "Photos", "Videos", "Friends", "Pets"];
+const Tabs = ["Bài viết", "Ảnh", "Video", "Bạn bè", "Thú cưng"];
 export const NavTabs = ({ activeTab, onTabChange }: { activeTab: string; onTabChange: (tab: string) => void; }) => {
   return (
     <div className="mt-4 bg-white rounded-lg shadow-sm">

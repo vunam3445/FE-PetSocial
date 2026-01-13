@@ -17,7 +17,7 @@ export const AuthCard = () => {
 
       {activeTab === "login" ? <LoginForm prefillEmail={prefillEmail} /> : <RegisterForm onSuccess={handleRegistered} />}
 
-      <SocialButtons />
+      {/* <SocialButtons /> */}
     </div>
   );
 };

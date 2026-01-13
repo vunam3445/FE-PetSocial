@@ -1,20 +1,13 @@
 import { useState } from "react";
 import api from "../../lib/axios";
-import type { MediaItem } from "../../types/Post";
-
+import type { SubmitData } from "../../types/Post";
 export interface MediaFile {
   file: File;
   type: "image" | "video";
   order?: number;
 }
 
-export interface SubmitData {
-  caption?: string;
-  visibility?: string;
-  shared_post_id?: string;
-  group_id?: string;
-  media?: MediaItem[];
-}
+
 
 export const useCreatePost = () => {
   const [loading, setLoading] = useState(false);
@@ -30,6 +23,7 @@ export const useCreatePost = () => {
       apiForm.append("author_id", id);
       apiForm.append("caption", formData.caption || "");
       apiForm.append("visibility", formData.visibility || "public");
+      apiForm.append("pet_id", formData.pet_id || ""); // Thêm pet_id nếu có
 
       if (formData.shared_post_id) {
         apiForm.append("shared_post_id", formData.shared_post_id);

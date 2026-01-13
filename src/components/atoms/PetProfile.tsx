@@ -46,9 +46,12 @@ export const PetProfile = ({
     }
     
   }
+  const handleClick = () => {
+    window.location.href = `/pet-health/${pet_id}`;
+  };
   return (
-    <div className="relative overflow-hidden transition-all bg-gradient-to-br from-yellow-400 to-orange-500 rounded-xl hover:shadow-lg pet-card aspect-square">
-      <div className="absolute inset-0 flex items-center justify-center text-6xl">
+    <div className="relative overflow-hidden transition-all bg-gradient-to-br from-yellow-400 to-orange-500 rounded-xl hover:shadow-lg pet-card aspect-square" >
+      <div className="absolute inset-0 flex items-center justify-center text-6xl" onClick={handleClick}>
         {avatar_url ? (
           <img
             src={avatar_url}
@@ -68,10 +71,14 @@ export const PetProfile = ({
           {birthday} • {gender}
         </p>
         {isOwner && (<div className="flex gap-2">
-          <button className="w-3/4 px-3 py-2 text-sm font-medium text-white border rounded-lg bg-white/20 backdrop-blur-sm hover:bg-white/30 border-white/30" onClick={handleEdit}>
+          <button className="w-3/4 px-3 py-2 text-sm font-medium text-white border rounded-lg bg-white/20 backdrop-blur-sm hover:bg-white/30 border-white/30" onClick={(e)=>{
+            e.stopPropagation();
+            handleEdit()}}>
             <i className="mr-2 fas fa-edit"></i>Sửa
           </button>
-          <button className="w-1/4 px-3 py-2 text-sm font-medium text-white border rounded-lg bg-red-500/30 backdrop-blur-sm hover:bg-red-500/50 border-white/30" onClick={handleDelete}>
+          <button className="w-1/4 px-3 py-2 text-sm font-medium text-white border rounded-lg bg-red-500/30 backdrop-blur-sm hover:bg-red-500/50 border-white/30" onClick={(e)=>{
+            e.stopPropagation();
+            handleDelete()}}>
             <i className="fas fa-trash-alt"></i>
           </button>
         </div>)}

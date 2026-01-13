@@ -27,19 +27,19 @@ const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
       aria-describedby="confirmation-dialog-description"
     >
       <DialogTitle id="confirmation-dialog-title">
-        Confirm Deletion
+        Xác nhận xóa
       </DialogTitle>
       <DialogContent>
         <DialogContentText id="confirmation-dialog-description">
-          Are you sure you want to delete this?
+          Bạn có chắc chắn muốn xóa không?
         </DialogContentText>
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose} color="primary">
-          Cancel
+          Hủy
         </Button>
         <Button onClick={onConfirm} color="error" variant="contained">
-          Delete
+          Xóa
         </Button>
       </DialogActions>
     </Dialog>
