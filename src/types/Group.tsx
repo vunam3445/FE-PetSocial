@@ -14,8 +14,12 @@ export interface Group {
 export interface GroupWithMemberRole {
   group: Group;
   member_role: string;   // hoặc union type nếu bạn muốn strict
-  member_status: string; // như trên
   total_members: number;
+  has_join_request: boolean;
+  join_request_status:string | null;
+  pending_posts_count: number;
+  pending_join_requests_count: number;
+  reported_posts_count: number;
 }
 
 export interface UpdateGroupData {
@@ -51,3 +55,4 @@ export interface PaginatedMembersResponse {
       to: number;
       total: number;
 }
+

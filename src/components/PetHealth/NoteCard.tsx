@@ -4,6 +4,7 @@ import { HealthCard } from "./HealthCard";
 import type { HealthCategory, HealthLog } from "../../types/Pet";
 
 interface NoteCardProps {
+  isOwner: boolean;
   healthLogs?: HealthCategory;
   onOpenLogModal: (category: string, categoryType: string, categoryId: string) => void;
   onDeleteCategory?: () => void; // Thêm prop xóa (tùy chọn) vì Note thường là do người dùng tạo
@@ -12,6 +13,7 @@ interface NoteCardProps {
 }
 
 export const NoteCard: React.FC<NoteCardProps> = ({
+  isOwner,
   healthLogs,
   onOpenLogModal,
   onDeleteCategory,
@@ -37,6 +39,7 @@ export const NoteCard: React.FC<NoteCardProps> = ({
 
   return (
     <HealthCard
+      isOwner={isOwner}
       title={healthLogs?.name || "Ghi chú sức khỏe"}
       onAddLog={() => onOpenLogModal(healthLogs?.name || "Ghi chú", "note", healthLogs?.category_id || '')}
       onDeleteCategory={onDeleteCategory} // Truyền prop xóa vào HealthCard

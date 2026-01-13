@@ -1,3 +1,4 @@
+import { gridClasses } from "@mui/material";
 import api from "../lib/axios";
 import type { Group } from "../types/Group";
 export const CreateGroup = async (name: string, visibility: string, created_by: string) => {
@@ -52,3 +53,7 @@ export const GetMembers = async (group_id: string, page=1 ) => {
   const response= api.get(url);
   return response;
 }
+
+export const GetJoinRequests = async (groupId: string, page: number = 1) => {
+  return await api.get(`/groups/${groupId}/joinRequests?page=${page}`);
+};

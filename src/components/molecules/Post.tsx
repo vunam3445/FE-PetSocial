@@ -18,6 +18,7 @@ export interface PostProps {
   onDetailPost: () => void;
   onError?: (msg: string) => void;
   onSharePost: () => void;
+  onReport?:() => void;
 }
 
 const Post = ({
@@ -27,13 +28,14 @@ const Post = ({
   onDetailPost,
   onError,
   onSharePost,
+  onReport
 }: PostProps) => {
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [mediaList, setMediaList] = useState<Media[]>([]);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [liked, setLiked] = useState(post.is_liked === 1);
+  const [commentsCount, setCommentsCount ] = useState(post.comments_count|| 0);
   const [likesCount, setLikesCount] = useState(post.likes_count ?? 0);
-
   const { id } = useParams();
   const isOwner = useUserId(id);
   const { toggleLike, error } = useLike();
@@ -107,6 +109,7 @@ const Post = ({
           isOwner={isOwner}
           onEdit={onEditPost}
           onDelete={onDeletePost}
+          onReport={onReport}
         />
 
         {post.caption && (
@@ -130,7 +133,7 @@ const Post = ({
         <PostActions
           liked={liked}
           likesCount={likesCount}
-          commentsCount={post.comments_count}
+          commentsCount={commentsCount}
           onLike={handleLike}
           onComment={handleComment}
           onShare={handleShare}

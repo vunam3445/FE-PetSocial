@@ -4,6 +4,7 @@ import type { HealthCategory, HealthLog } from "../../types/Pet";
 import React, { useMemo } from "react";
 
 interface VaccinationCardProps {
+  isOwner: boolean;
   healthLogs: HealthCategory;
   onOpenLogModal: (category: string) => void;
   onDeleteCategory: () => void;
@@ -17,6 +18,7 @@ export const VaccinationCard: React.FC<VaccinationCardProps> = ({
   onDeleteCategory,
   onViewLogsList,
   onEdit,
+  isOwner
 }) => {
   // Filter log đã hoàn thành
   const completedLogs = healthLogs.health_logs.filter(
@@ -60,6 +62,7 @@ export const VaccinationCard: React.FC<VaccinationCardProps> = ({
 
   return (
     <HealthCard
+      isOwner={isOwner}
       title={healthLogs.name}
       onAddLog={() => onOpenLogModal(healthLogs.name)}
       onDeleteCategory={onDeleteCategory}

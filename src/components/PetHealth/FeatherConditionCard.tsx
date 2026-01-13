@@ -9,6 +9,7 @@ interface FeatherConditionCardProps {
   onDeleteCategory: () => void; // Thêm prop xóa (tùy chọn) nếu cần
   onViewLogsList?: (category: HealthCategory) => void; // NEW: Mở danh sách log
   onEdit?: () => void; // NEW: Xử lý sửa category
+  isOwner: boolean;
 }
 
 export const FeatherConditionCard: React.FC<FeatherConditionCardProps> = ({
@@ -17,6 +18,7 @@ export const FeatherConditionCard: React.FC<FeatherConditionCardProps> = ({
   onDeleteCategory,
   onViewLogsList,
   onEdit,
+  isOwner
 }) => {
   // Sắp xếp logs: Gần nhất lên đầu để xem tình trạng hiện tại
   const sortedLogs = healthLogs?.health_logs.sort(
@@ -35,6 +37,7 @@ export const FeatherConditionCard: React.FC<FeatherConditionCardProps> = ({
 
   return (
     <HealthCard
+      isOwner={isOwner}
       title={healthLogs?.name || "Tình trạng Lông & Da"}
       onAddLog={() => onOpenLogModal("Tình trạng Lông & Da")}
       onDeleteCategory={onDeleteCategory}

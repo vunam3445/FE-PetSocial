@@ -1,62 +1,77 @@
-import { useEffect, useState } from "react";
-// Giả sử Members là kiểu mảng Member[], PaginatedMembersResponse là kiểu trả về của API
-import type {  Member } from "../../types/Group";
+import { useEffect, useState, useCallback } from "react";
+import type { Member } from "../../types/Group";
 import { GetMembers } from "../../services/GroupService";
 
-export const useGetMembersOfGroup = (page: number = 1, group_id: string) => {
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-    const [hasMore, setHasMore] = useState(false);
-    const [members, setMembers] = useState<Member>([]);
+interface UseGetMembersOfGroupResult {
+  loading: boolean;
+  error: string | null;
+  members: Member[];
+  hasMore: boolean;
+  refetch: () => void;
+  reset: () => void;
+}
 
-    useEffect(() => {
-        const fetchDataMembers = async () => {
-            setLoading(true);
-            setError(null);
-            
-            try {
-                // LƯU Ý: Hàm GetMembers cần nhận tham số page
-                const response = await GetMembers(group_id, page); 
+export const useGetMembersOfGroup = (
+  groupId: string,
+  page: number = 1
+): UseGetMembersOfGroupResult => {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [members, setMembers] = useState<Member[]>([]);
+  const [hasMore, setHasMore] = useState(false);
 
-                if (response.status === 200 && response.data) {
-                    // Giả sử response.data là object phân trang chứa { data: [], current_page, ... }
-                    const result = response.data; 
-                    const newMembers = result.data || []; // Mảng thành viên mới
+  const fetchMembers = useCallback(async () => {
+    if (!groupId) return;
 
-                    if (newMembers.length === 0 && page === 1) {
-                        setError('Không có thành viên nào!');
-                    }
+    setLoading(true);
+    setError(null);
 
-                    setMembers((prev) => {
-                        // Nếu là trang 1, reset lại mảng. Nếu trang > 1, nối thêm vào.
-                        if (page === 1) return newMembers;
-                        
-                        // Lọc trùng lặp (tuỳ chọn nhưng nên có để tránh React.StrictMode render 2 lần gây trùng)
-                        // Giả sử member có id
-                        const existingIds = new Set(prev.map(m => m.id));
-                        const uniqueNewMembers = newMembers.filter(m => !existingIds.has(m.id));
-                        
-                        return [...prev, ...uniqueNewMembers];
-                    });
+    try {
+      const response = await GetMembers(groupId, page);
 
-                    // Logic check hasMore
-                    setHasMore(result.current_page < result.last_page);
-                }
-            } catch (e: any) {
-                // Xử lý lỗi
-                console.error(e);
-                setError("Có lỗi xảy ra vui lòng thử lại sau");
-            } finally {
-                setLoading(false);
-            }
-        };
+      if (response.status === 200 && response.data) {
+        const result = response.data;
+        const newMembers: Member[] = result.data ?? [];
 
-        // Chỉ gọi API nếu có group_id
-        if (group_id) {
-            fetchDataMembers();
-        }
+        setMembers(prev => {
+          if (page === 1) return newMembers;
 
-    }, [page, group_id]); // Effect chạy lại khi page hoặc group_id thay đổi
+          // tránh trùng khi React StrictMode
+          const existingIds = new Set(prev.map(m => m.user_id));
+          const unique = newMembers.filter(
+            m => !existingIds.has(m.user_id)
+          );
 
-    return { loading, error, hasMore, members};
+          return [...prev, ...unique];
+        });
+
+        setHasMore(result.current_page < result.last_page);
+      }
+    } catch (err) {
+      console.error(err);
+      setError("Có lỗi xảy ra, vui lòng thử lại");
+    } finally {
+      setLoading(false);
+    }
+  }, [groupId, page]);
+
+  useEffect(() => {
+    fetchMembers();
+  }, [fetchMembers]);
+
+  const reset = () => {
+    setMembers([]);
+    setHasMore(false);
+    setError(null);
+  };
+
+  return {
+    loading,
+    error,
+    members,
+    setMembers,
+    hasMore,
+    refetch: fetchMembers,
+    reset,
+  };
 };

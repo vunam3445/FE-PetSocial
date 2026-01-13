@@ -7,8 +7,10 @@ import ErrorToast from "../toasts/ErrorToast";
 import { usePets } from "../../hooks/profile/usePets";
 export const CreatePost = ({
   onPostCreated,
+  group_id,
 }: {
   onPostCreated: (post: unknown) => void;
+  group_id?: string;
 }) => {
   const [openModel, setOpenModal] = useState(false);
   const { createPost, loading, error } = useCreatePost();
@@ -50,14 +52,14 @@ if ((!formDataFromModal.caption || formDataFromModal.caption.trim() === "")
   setOpenToast(true);
   return;
 }
-    console.log("Form data from modal:", formDataFromModal);
     try {
       const submitData: SubmitData = {
+
         author_id: userId,
         caption: formDataFromModal.caption,
         visibility: formDataFromModal.visibility,
         shared_post_id: formDataFromModal.shared_post_id,
-        group_id: formDataFromModal.group_id,
+        group_id: group_id || null,
         media: formDataFromModal.media,
         pet_id: formDataFromModal.pet_id,
       };

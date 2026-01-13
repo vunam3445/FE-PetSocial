@@ -186,6 +186,7 @@ export const PetHealth = () => {
                   {activeTab === "health" && (
                     <HealthDashboardTab
                       species={petInfo?.type}
+                      owner={petInfo?.user_id}
                       healthData={healthData}
                       loading={healthLoading}
                       onOpenLogModal={handleOpenLogModal}

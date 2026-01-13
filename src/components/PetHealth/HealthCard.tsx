@@ -2,6 +2,7 @@
 import React from "react";
 
 interface HealthCardProps {
+  isOwner: boolean;
   title: string;
   onAddLog: () => void;
   onEdit?: () => void; // <-- [NEW] Prop để sửa category/card
@@ -12,6 +13,7 @@ interface HealthCardProps {
 }
 
 export const HealthCard: React.FC<HealthCardProps> = ({
+  isOwner,
   title,
   onAddLog,
   onEdit, // <-- [NEW]
@@ -27,7 +29,8 @@ export const HealthCard: React.FC<HealthCardProps> = ({
         <h4 className="text-xl font-bold text-gray-800">{title}</h4>
 
         {/* Button Group */}
-        <div className="flex items-center gap-2">
+        {isOwner &&(
+                  <div className="flex items-center gap-2">
           {/* 1. Add Log Button */}
           <button
             onClick={onAddLog}
@@ -102,6 +105,7 @@ export const HealthCard: React.FC<HealthCardProps> = ({
             </button>
           )}
         </div>
+        )}
       </div>
 
       {/* Card Body */}

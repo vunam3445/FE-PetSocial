@@ -16,7 +16,6 @@ export const PostsTab = () => {
   );
   const { handleUpdate, handleDelete, handleShare } = usePostActions(setPosts);
 
-  console.log("Posts in PostsTab:", posts);
   
   const observer = useRef<IntersectionObserver | null>(null);
   const lastPostRef = useCallback(
@@ -46,10 +45,7 @@ export const PostsTab = () => {
   }
 
   return (
-    // ĐÃ SỬA Ở ĐÂY:
-    // 1. Xóa lg:w-1/2 (nguyên nhân gây co nhỏ)
-    // 2. Thêm w-full (để chiếm hết khung cha)
-    // 3. Dùng px-2 hoặc px-4 để padding nhẹ 2 bên trái phải
+
     <main className="flex-1 w-full px-2 md:px-4">
       <ListPost
         posts={posts}

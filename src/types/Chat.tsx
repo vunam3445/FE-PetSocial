@@ -1,5 +1,7 @@
 export interface ConversationPayload {
     participant_ids: string[];
+    is_group?:boolean;
+    name?: string;
 }
 
 export interface ParticipantPivot {
@@ -20,8 +22,9 @@ export interface Conversation {
   is_group: boolean;
   created_at: string; // ISO date string
   updated_at: string; // ISO date string
+  created_by:string;
   participants: Participant[];
-  messages: Message[]; // định nghĩa thêm bên dưới
+  avatar_url: string | null;
 }
 
 export interface Message {

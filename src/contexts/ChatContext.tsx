@@ -1,11 +1,6 @@
-// contexts/ChatContext.tsx
-import { createContext, useContext } from "react";
-
-interface Conversation {
-  id: string;
-  title: string;
-  avatarUrl: string;
-}
+import React, { createContext, useContext } from "react";
+import { type ConversationItem } from "../types/Chat";
+import { type EditingConversation } from "../types/Conversation";
 
 export interface Message {
   message_id: string;   // ✅ đồng bộ với API
@@ -19,17 +14,30 @@ export interface Message {
 }
 
 export interface ChatContextType {
-  openConversations: Conversation[];
-  openConversation: (conv: Conversation) => void;
+  openConversations: ConversationItem[];
+  openConversation: (conv: ConversationItem) => void;
   closeConversation: (id: string) => void;
-  conversations: Conversation[];
-  fetchMessages: (conversationId: string) => Promise<void>;
-  fetchConversations: (status: "read" | "unread") => Promise<void>;
+  conversations: ConversationItem[];
+  isFetching: boolean;
+  setConversations: React.Dispatch<React.SetStateAction<ConversationItem[]>>; // Kiểu chuẩn ở đây  fetchMessages: (conversationId: string) => Promise<void>;
+  fetchConversations: (status: "read" | "unread",page: number) => Promise<void>;
+  hasMoreConversations: boolean,
+  conversationsPage: number,
+  fetchMessages:(conversationId: string,page?: number)=>Promise<Message[]>;
   messages: { [conversationId: string]: Message[] }; 
   addMessage: (conversationId: string, message: Message) => void;
   updateMessage: (conversationId: string, tempId: string, newData: Message) => void;
   onlineUsers: string[]; // ✅ danh sách userId đang online
 
+  editingConversation: EditingConversation | null;
+  setEditingConversation: React.Dispatch<React.SetStateAction<EditingConversation | null>>;
+  openEditConversation: boolean;
+  setOpenEditConversation: React.Dispatch<React.SetStateAction<boolean>>;
+
+
+  notifications: any[]; // Bạn có thể dùng Interface NotificationItem đã định nghĩa trước đó
+  unreadNotificationsCount: number;
+  setUnreadNotificationsCount: React.Dispatch<React.SetStateAction<number>>;
 }
 
 export const ChatContext = createContext<ChatContextType | null>(null);

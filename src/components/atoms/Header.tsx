@@ -1,7 +1,11 @@
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useEffect, useState, useRef } from "react";
 import { ChatModal } from "../modals/ChatModal";
-
+import { NotificationList } from "../Notifications/NotificationList";
+import { useGetMyNotification } from "../../hooks/notification/useGetMyNotification";
+import { useReadNotification } from "../../hooks/notification/useReadNotification";
+import { useChat } from "../../contexts/ChatContext";
+import type { NotificationItem } from "../../types/Notification";
 export const Header = () => {
   const [params] = useSearchParams();
   const [keyword, setKeyword] = useState("");
@@ -11,6 +15,93 @@ export const Header = () => {
   const user_id = localStorage.getItem("user_id") || "";
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement | null>(null);
+  const { unreadNotificationsCount: socketCount, notifications: socketNotis} =
+    useChat();
+  const {
+    notifications: apiNotis,
+    unreadCount,
+    setUnreadCount,
+  } = useGetMyNotification(user_id);
+  const [unread, setUnread] = useState(0);
+
+  const [localNotifications, setLocalNotifications] = useState<
+    NotificationItem[]
+  >([]);
+  const [openNotification, setOpenNotification] = useState(false);
+
+  // 1. Theo dõi socketCount từ useChat và cập nhật unreadCount của API
+  useEffect(() => {
+    if (socketCount > 0) {
+      // Mỗi khi socket nhận 1 thông báo mới, ta cộng thêm vào số lượng hiện tại
+      setUnreadCount((prev) => prev + socketCount);
+    }
+  }, [socketCount, setUnreadCount]);
+
+  // 2. Sửa lại logic gộp thông báo để tránh trùng lặp (Sử dụng Map)
+  useEffect(() => {
+    // Lọc trùng theo ID để tránh việc socket và api cùng trả về 1 tin khi reload
+    const allNotis = [...socketNotis, ...apiNotis];
+    const uniqueNotis = Array.from(
+      new Map(allNotis.map((item) => [item.id, item])).values()
+    );
+
+    // Sắp xếp theo thời gian mới nhất (nếu cần)
+    const sorted = uniqueNotis.sort(
+      (a, b) =>
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    );
+
+    setLocalNotifications(sorted);
+  }, [socketNotis, apiNotis]);
+  const { markAsRead } = useReadNotification();
+  const handleClick = async (noti: NotificationItem, solveStatus?: string) => {
+    // 1. Cập nhật UI cục bộ ngay lập tức (Optimistic Update)
+    setLocalNotifications((prev) =>
+      prev.map((item) => {
+        if (item.id !== noti.id) return item;
+
+        // Khởi tạo object copy
+        let updatedItem = { ...item };
+
+        // Xử lý đánh dấu đã đọc
+        if (updatedItem.read_at === null) {
+          updatedItem.read_at = new Date().toISOString();
+          setUnreadCount((prevCount) => (prevCount > 0 ? prevCount - 1 : 0));
+        }
+
+        // Xử lý cập nhật status cho lời mời vào nhóm
+        if (
+          updatedItem.data?.type === "conversation_invitation" &&
+          solveStatus // Chỉ cập nhật nếu có truyền status vào
+        ) {
+          updatedItem.data = { ...updatedItem.data, status: solveStatus };
+        }
+
+        return updatedItem;
+      })
+    );
+
+    // 2. Gọi API để đồng bộ với Server
+    try {
+      // Luôn gọi đánh dấu đã đọc nếu tin nhắn chưa đọc
+      if (noti.read_at === null) {
+        await markAsRead(noti.id);
+      }
+
+      // Nếu là lời mời và có status mới, hãy gọi API cập nhật status tại đây
+      if (noti.data?.type === "conversation_invitation" && solveStatus) {
+        // await updateInvitationStatus(noti.data.conversation_id, solveStatus);
+        console.log(`Đã cập nhật ${noti.id} sang trạng thái: ${solveStatus}`);
+      }
+    } catch (error) {
+      console.error("Lỗi đồng bộ dữ liệu:", error);
+      // Tùy chọn: Có thể fetch lại danh sách nếu muốn đảm bảo data chính xác khi lỗi API
+    }
+  };
+  const handleNotification = async () => {
+    setOpenNotification(!openNotification);
+  };
+
   const goToProfile = () => {
     if (user_id) {
       navigate(`/profile/${user_id}`);
@@ -107,25 +198,43 @@ export const Header = () => {
               </svg>
             </button>
 
-            {/* <button className="relative hidden p-2 rounded-lg hover:bg-gray-100 sm:block">
-              <svg
-                className="w-6 h-6 text-gray-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
+            {/* Bọc toàn bộ vùng icon thông báo vào 1 div relative */}
+            <div className="relative">
+              <button
+                className="relative p-2 rounded-lg hover:bg-gray-100 sm:block"
+                onClick={handleNotification}
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M15 17h5l-5 5v-5zM10.07 2.82l3.93 3.93-3.93 3.93-3.93-3.93z"
-                ></path>
-              </svg>
-              <span className="absolute flex items-center justify-center w-4 h-4 text-xs text-white bg-red-500 rounded-full -top-1 -right-1">
-                3
-              </span>
-            </button> */}
+                {/* SVG Icon chuông */}
+                <svg
+                  className="w-6 h-6 text-gray-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
+                  />
+                </svg>
+                {unreadCount !== 0 && (
+                  <span className="absolute flex items-center justify-center w-4 h-4 text-[10px] text-white bg-red-500 rounded-full top-1 right-1">
+                    {unreadCount}
+                  </span>
+                )}
+              </button>
 
+              {/* Định vị tuyệt đối */}
+              {openNotification && (
+                <div className="fixed right-4 top-16 z-[100] mt-2">
+                  <NotificationList
+                    notifications={localNotifications}
+                    handleClick={handleClick}
+                  />
+                </div>
+              )}
+            </div>
             <button
               className="relative hidden p-2 rounded-lg hover:bg-gray-100 sm:block"
               onClick={() => setIsChatOpen(!isChatOpen)}
@@ -195,19 +304,12 @@ export const Header = () => {
           </div>
         </div>
       </div>
-      {/* {isDropdownOpen && (
-        <div className="absolute right-0 w-40 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg">
-          <button
-            onClick={handleLogout}
-            className="w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-100"
-          >
-            Đăng xuất
-          </button>
-        </div>
-      )} */}
+
       {isChatOpen && (
         <ChatModal open={isChatOpen} onClose={() => setIsChatOpen(false)} />
       )}
+
+      
     </header>
   );
 };

@@ -5,6 +5,8 @@ import { useCreateGroup } from "../../hooks/group/useCreateGroup";
 import { LoadingOverlay } from "../loadings/LoadingOverlay";
 import  ErrorToast  from "../toasts/ErrorToast";
 import SuccessToast from "../toasts/SuccessToast";
+import GroupsIcon from "@mui/icons-material/Groups";
+
 const Sidebar: React.FC = () => {
   const userId = localStorage.getItem("user_id"); // lấy id từ localStorage
   const { createGroup, loading, error } = useCreateGroup();
@@ -12,7 +14,7 @@ const Sidebar: React.FC = () => {
   const navigationItems = [
     { icon: "👥", label: "Bài viết", href: "/" },
     { icon: "👤", label: "Trang cá nhân", href: `/profile/${userId}` }, // đổi thành route đúng
-    { icon: '', label: 'Nhóm', href: '/groups' },
+    { icon: "👪", label: 'Nhóm', href: '/groups' },
     // { icon: '🛒', label: 'Marketplace', href: '/marketplace' },
     // { icon: '📅', label: 'Events', href: '/events' },
     // { icon: '🐕', label: 'Pets', href: '/pets', isActive: true },

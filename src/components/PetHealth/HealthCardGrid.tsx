@@ -19,6 +19,7 @@ import { useUpdatePetHealthLog } from "../../hooks/pet/useUpdatePetHealthLog";
 import { LoadingOverlay } from "../loadings/LoadingOverlay";
 import ErrorToast from "../toasts/ErrorToast";
 interface HealthCardGridProps {
+  owner: string;
   onOpenLogModal: (
     category: string,
     categoryType: string,
@@ -32,6 +33,7 @@ interface HealthCardGridProps {
 }
 
 export const HealthCardGrid: React.FC<HealthCardGridProps> = ({
+  owner,
   onOpenLogModal,
   onOpenCategoryModal,
   healthData,
@@ -39,6 +41,10 @@ export const HealthCardGrid: React.FC<HealthCardGridProps> = ({
   onDeleteCategory,
   onOpenEditCategory,
 }) => {
+
+  const userId = localStorage.getItem('user_id');
+  const isOwner = userId === owner;
+  console.log('kfja',isOwner)
   const [isLogHistoryModalOpen, setIsLogHistoryModalOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] =
     useState<HealthCategory | null>(null);
@@ -106,6 +112,7 @@ export const HealthCardGrid: React.FC<HealthCardGridProps> = ({
           case "metric":
             return (
               <WeightCard
+                isOwner={isOwner}
                 key={category.category_id}
                 healthLogs={category}
                 onOpenLogModal={() =>
@@ -124,6 +131,7 @@ export const HealthCardGrid: React.FC<HealthCardGridProps> = ({
           case "schedule":
             return (
               <VaccinationCard
+                isOwner={isOwner}
                 key={category.category_id}
                 healthLogs={category}
                 onOpenLogModal={() =>
@@ -142,6 +150,7 @@ export const HealthCardGrid: React.FC<HealthCardGridProps> = ({
           case "event":
             return (
               <FeatherConditionCard
+                isOwner={isOwner}
                 healthLogs={category}
                 key={category.category_id}
                 onOpenLogModal={() =>
@@ -160,6 +169,7 @@ export const HealthCardGrid: React.FC<HealthCardGridProps> = ({
           case "note":
             return (
               <NoteCard
+                isOwner={isOwner}
                 healthLogs={category}
                 key={category.category_id}
                 onOpenLogModal={() =>
@@ -180,7 +190,9 @@ export const HealthCardGrid: React.FC<HealthCardGridProps> = ({
         }
       })}
 
-      <AddCategoryCard onOpenCategoryModal={onOpenCategoryModal} />
+      {isOwner &&(
+        <AddCategoryCard onOpenCategoryModal={onOpenCategoryModal} />
+      )}
       <LogHistoryModal
         isOpen={isLogHistoryModalOpen}
         onClose={() => setIsLogHistoryModalOpen(false)}

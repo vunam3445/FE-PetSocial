@@ -30,7 +30,7 @@ export const MainContentTabs: React.FC<MainContentTabsProps> = ({ activeTab, onT
           className={getTabClasses('health')}
           onClick={() => onTabClick('health')}
         >
-          Hồ sơ Sức khỏe
+          Hồ sơ sức khỏe
         </button>
       </nav>
     </div>

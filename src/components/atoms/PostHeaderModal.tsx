@@ -37,11 +37,11 @@ const visibilityOptions: VisibilityOption[] = [
     label: "Public",
     icon: <Public fontSize="small" />,
   },
-  {
-    value: "friends",
-    label: "Friends",
-    icon: <People fontSize="small" />,
-  },
+  // {
+  //   value: "friends",
+  //   label: "Friends",
+  //   icon: <People fontSize="small" />,
+  // },
   {
     value: "private",
     label: "Private",

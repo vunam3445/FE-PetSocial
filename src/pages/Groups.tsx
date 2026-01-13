@@ -1,10 +1,12 @@
 import React from "react";
 import { Sidebar } from "../components/groups/Sidebar";
 import { GroupFeedContainer } from "../components/groups/GroupFeedContainer";
+import { Header } from "../components/atoms/Header";
 
 export const Groups = () => {
   return (
     <div className="flex w-full h-screen overflow-hidden font-sans text-gray-800 bg-gray-100">
+      <Header/>
       {/* Inject FontAwesome & Custom Scrollbar Styles */}
       <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
       <style>{`

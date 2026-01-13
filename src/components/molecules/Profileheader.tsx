@@ -67,7 +67,6 @@ export const Profileheader = ({
   try {
     const res = await createConversation({ participant_ids: [id] });
     const conv = res.data;
-    console.log("API trả về conv:", conv);
 
     if (conv) {
       const currentUserId = localStorage.getItem("user_id");

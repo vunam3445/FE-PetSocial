@@ -5,6 +5,7 @@ import { WeightChart } from './WeightChart';
 import type { HealthCategory } from '../../types/Pet';
 
 interface WeightCardProps {
+  isOwner: boolean;
   healthLogs?: HealthCategory;
   onOpenLogModal: (category: string) => void;
   onDeleteCategory: () => void;
@@ -13,7 +14,7 @@ interface WeightCardProps {
   onEdit?: () => void; // NEW: Xử lý sửa category
 }
 
-export const WeightCard: React.FC<WeightCardProps> = ({ healthLogs, onOpenLogModal, onDeleteCategory , onViewLogsList, onDeleteLog , onEdit}) => {
+export const WeightCard: React.FC<WeightCardProps> = ({ healthLogs, onOpenLogModal, onDeleteCategory , onViewLogsList, onDeleteLog , onEdit, isOwner}) => {
   const footer = (
     <p className="text-sm text-gray-600">
       Cập nhật gần nhất: <span className="font-medium text-gray-900">{healthLogs?.health_logs[0]?.recorded_at} - {healthLogs?.health_logs[0]?.value}</span>
@@ -22,6 +23,7 @@ export const WeightCard: React.FC<WeightCardProps> = ({ healthLogs, onOpenLogMod
 
   return (
     <HealthCard
+      isOwner={isOwner}
       title={healthLogs?.name || ''}
       onAddLog={() => onOpenLogModal('Cân nặng')}
       onDeleteCategory={onDeleteCategory}

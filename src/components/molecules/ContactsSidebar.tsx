@@ -60,7 +60,7 @@ const ContactsSidebar: React.FC = () => {
     <aside className="sticky hidden w-1/4 h-screen overflow-y-auto bg-white border-l border-gray-200 lg:block top-16">
       <div className="p-6">
         <h2 className="mb-6 text-xl font-semibold text-gray-900">
-          Recent Contacts
+          Người liên hệ gần đây
         </h2>
         <div className="space-y-4">
           {contacts.map((contact) => (

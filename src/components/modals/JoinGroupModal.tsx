@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import type { GroupJoinQuestion } from "../../types/QuestionAndAnswer";
+import type { GroupJoinQuestion , JoinGroupAnswer, JoinGroupRequest} from "../../types/QuestionAndAnswer";
 
 // Định nghĩa kiểu dữ liệu cho câu hỏi
 export interface GroupQuestion {
@@ -11,9 +11,10 @@ export interface GroupQuestion {
 interface JoinGroupModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (answers: { questionId: string; answer: string }[]) => void;
+  onSubmit: (answers: JoinGroupRequest) => void;
   groupName: string;
   questions: GroupJoinQuestion[];
+  groupId:string;
   isSubmitting?: boolean;
 }
 
@@ -23,6 +24,7 @@ export const JoinGroupModal: React.FC<JoinGroupModalProps> = ({
   onSubmit,
   groupName,
   questions,
+  groupId,
   isSubmitting = false,
 }) => {
   // State lưu trữ câu trả lời: { [questionId]: "nội dung trả lời" }
@@ -47,14 +49,20 @@ export const JoinGroupModal: React.FC<JoinGroupModalProps> = ({
 
   // Xử lý khi bấm Gửi
   const handleSubmit = () => {
-    // Chuyển đổi object answers thành array để gửi đi
-    const formattedAnswers = questions.map((q) => ({
-      questionId: q.id,
-      answer: answers[q.id] || "", // Nếu không trả lời thì để chuỗi rỗng
-    }));
-    
-    onSubmit(formattedAnswers);
+
+  const formattedAnswers = questions.map((q) => ({
+    question_id: q.id,
+    answer: answers[q.id] || "",
+  }));
+
+  const payload: JoinGroupRequest = {
+    groupId,
+    answers: formattedAnswers,
   };
+
+  onSubmit(payload);
+};
+
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center h-full max-h-full p-4 overflow-x-hidden overflow-y-auto bg-black bg-opacity-50 md:inset-0">

@@ -51,3 +51,45 @@ export interface PetSearchResult {
   type: string;
   is_following: boolean;
 }
+
+export interface GroupSearchResult {
+  group_id: string;
+  name: string;
+  description: string | null;
+  avatar_url: string;
+  cover_url: string;
+  visibility: "public" | "private" | "hidden";
+  require_post_approval: boolean;
+  created_by: string;
+  created_at: string;
+  updated_at: string;
+  members_count: number;
+  posts_count: number;
+  is_member: boolean;
+}
+
+export interface Participant {
+  user_id: string;
+  name: string;
+  avatar_url: string;
+}
+
+export interface ConversationSearchItem {
+  conversation_id: string;
+  name: string | null; // null nếu là chat 1-1
+  is_group: boolean;
+  avatar_url: string;
+  created_by: string;
+  created_at: string;
+  updated_at: string;
+  participants: Participant[];
+}
+
+// Nếu bạn sử dụng phân trang (Pagination) từ Laravel
+export interface PaginatedConversationResponse {
+  current_page: number;
+  data: ConversationSearchItem[];
+  next_page_url: string | null;
+  prev_page_url: string | null;
+  total: number;
+}

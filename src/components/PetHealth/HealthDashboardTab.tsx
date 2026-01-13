@@ -6,6 +6,7 @@ import { usePetHealthCategories } from '../../hooks/pet/usePetHealthCategories';
 import type { HealthCategoryList } from '../../types/Pet';
 interface HealthDashboardTabProps {
   species: string;
+  owner: string;
   onOpenLogModal: (category: string, categoryType: string, categoryId: string) => void;
   onOpenCategoryModal: () => void;
   healthData?: HealthCategoryList;
@@ -16,6 +17,7 @@ interface HealthDashboardTabProps {
 
 export const HealthDashboardTab: React.FC<HealthDashboardTabProps> = ({
   species,
+  owner,
   onOpenLogModal,
   onOpenCategoryModal,
   healthData,
@@ -26,8 +28,9 @@ export const HealthDashboardTab: React.FC<HealthDashboardTabProps> = ({
   const { categories } = usePetHealthCategories(species);
   return (
     <div className="space-y-8">
-      <SmartSuggestions categories={categories} />
+      {/* <SmartSuggestions categories={categories} /> */}
       <HealthCardGrid 
+        owner={owner}
         onOpenLogModal={onOpenLogModal}
         onOpenCategoryModal={onOpenCategoryModal}
         loading={loading}

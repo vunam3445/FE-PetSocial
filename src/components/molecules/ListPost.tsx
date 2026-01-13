@@ -8,6 +8,9 @@ import PostDetailModal from "../modals/PostDetailModal";
 import SuccessToast from "../toasts/SuccessToast";
 import ErrorToast from "../toasts/ErrorToast";
 import type { SubmitData } from "../../types/Post";
+import ReportModal from "../modals/ReportModal";
+import { useCreateReport } from "../../hooks/report/useCreateReport";
+import type { ReportData } from "../../types/Report";
 
 interface PostListProps {
   posts: PostType[];
@@ -31,7 +34,8 @@ export const ListPost = ({
   const [shareModalOpen, setShareModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [detailModalOpen, setDetailModalOpen] = useState(false);
-
+  const [reportModalOpen, setReportModalOpen] = useState(false);
+  const {create} = useCreateReport();
   const [updatingPostId, setUpdatingPostId] = useState<string | null>(null);
   const [successToast, setSuccessToast] = useState<{
     open: boolean;
@@ -80,11 +84,28 @@ export const ListPost = ({
       setSelectedPost(null);
     }
   };
+ 
+  const handleSubmit = async(data: ReportData)=>{
+    if(!selectedPost) return;
+    const payload= {
+      ...data,
+      post_id : selectedPost.post_id
+    }
+    try{
+      await create(payload);
+      setSuccessToast({ open: true, text: "Báo cáo bài viết thành công!" });
+    }catch{
+      setErrorToast({open: true, text: "Báo cáo bài viết thất bại"});
+    }finally{
+      setReportModalOpen(false);
+      setSelectedPost(null);
+    }
+  }
 
   return (
     <div className="space-y-4">
       {posts.length === 0 ? (
-        <div className="p-4 text-center text-gray-500"></div>
+        <div className="p-4 text-center text-gray-500">Không có bài viết phù hợp</div>
       ) : (
         posts.map((post, index) => {
           const isTrigger = (index + 1) % 7 === 0;
@@ -111,6 +132,10 @@ export const ListPost = ({
                 onSharePost={() => {
                   setSelectedPost(post);
                   setShareModalOpen(true);
+                }}
+                onReport={()=>{
+                  setSelectedPost(post);
+                  setReportModalOpen(true);
                 }}
                 onError={(msg) => setErrorToast({ open: true, text: msg })}
               />
@@ -167,6 +192,12 @@ export const ListPost = ({
         open={errorToast.open}
         text={errorToast.text}
         onClose={() => setErrorToast({ open: false, text: "" })}
+      />
+
+      <ReportModal 
+        isOpen={reportModalOpen}
+        onClose={()=>{setReportModalOpen(false)}}
+        onSubmit={handleSubmit}
       />
     </div>
   );

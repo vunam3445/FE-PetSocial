@@ -1,5 +1,9 @@
 // IntroCard.jsx
-export const IntroCard = ({ description}: { description?: string }) => {
+import {IntroCardSkeleton} from "../../../../../skeleton/IntroCardSkeleton";
+export const IntroCard = ({ description, loading}: { description?: string ,loading:boolean}) => {
+  if(loading){
+    return <IntroCardSkeleton/>
+  }
   return (
     <div className="p-4 bg-white rounded-lg shadow">
       <h2 className="mb-2 text-lg font-bold">Giới thiệu</h2>

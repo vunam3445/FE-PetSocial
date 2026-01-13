@@ -30,7 +30,7 @@ const HomePostContainer = ({ newPost }: HomePostContainerProps) => {
 
       observer.current = new IntersectionObserver((entries) => {
         if (entries[0].isIntersecting && hasMore) {
-          setPage((prev) => prev + 1); // load page tiếp theo
+          setPage((prev) => prev + 1);
         }
       });
 

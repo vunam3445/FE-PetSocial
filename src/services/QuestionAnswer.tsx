@@ -1,4 +1,5 @@
 import api from '../lib/axios';
+import type { JoinGroupRequest } from '../types/QuestionAndAnswer';
 
 export const createQuestion = async(group_id: string,question: string)=>{
     const url = `/groups/questions`;
@@ -25,8 +26,19 @@ export const deleteQuestion = async(id:number)=>{
     return response;
 }
 
-export const submitAnwer = async(group_id:string, data:any) =>{
-    const url = `/groups/${group_id}/`;
+export const submitAnwer = async(data: JoinGroupRequest) =>{
+    const url = `/groups/${data.group_id}/joinGroup`;
     const response = api.post(url, data);
     return response;
+}
+
+export const updateRequest= async(id:number, data:any)=>{
+    const url = `/requests/${id}`;
+    const response = api.put(url, data);
+    return response;
+}
+export const deleteRequest = async(groupId: string)=>{
+    const url =`/requests/${groupId}`;
+    const res = api.delete(url);
+    return res;
 }

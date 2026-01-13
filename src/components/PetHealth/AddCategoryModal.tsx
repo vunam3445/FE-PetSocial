@@ -21,28 +21,54 @@ export const AddCategoryModal: React.FC<AddCategoryModalProps> = ({
   const [interval_days, setIntervalDays] = useState<number | null>(null);
   const [unit, setUnit] = useState<string>("");
   const { id } = useParams<{ id: string }>();
-  const handleCategoryTypeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setCustomCategory(e.target.value);
+const handleCategoryTypeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const type = e.target.value;
+  setCustomCategory(type);
+
+  if (type !== "metric") setUnit("");
+  if (type !== "schedule") setIntervalDays(null);
+
+};
+
+const validateCreateCategory = () => {
+  if (!categoryName.trim()) {
+    alert("Vui lòng nhập tên danh mục");
+    return;
+  }
+
+  if (customCategory === "metric" && !unit.trim()) {
+    alert("Vui lòng nhập đơn vị đo");
+    return;
+  }
+
+  if (customCategory === "schedule" && (!interval_days || interval_days <= 0)) {
+    alert("Vui lòng nhập số ngày hợp lệ");
+    return;
+  }
+
+  const data: any = {
+    pet_id: id,
+    name: categoryName,
+    category_type: customCategory,
   };
 
-  const validateCreateCategory = () => {
-    if (!categoryName.trim()) {
-      alert("Vui lòng nhập tên danh mục.");
-      return;
-    }
-    if (customCategory === "schedule" && !interval_days) {
-      alert("Vui lòng nhập số ngày cho lịch.");
-      return;
-    }
-    const data: any = {
-      pet_id: id,
-      name: categoryName,
-      category_type: customCategory,
-      interval_days,
-      unit:unit,
-    };
-     onCreateCategory(data);
-  };
+  if (customCategory === "metric") {
+    data.unit = unit;
+  }
+
+  if (customCategory === "schedule") {
+    data.interval_days = interval_days;
+  }
+
+  onCreateCategory(data);
+  setCategoryName('');
+  setCustomCategory('metric');
+  onClose(); // đóng modal luôn
+};
+
+// reset các input khi đổi type
+
+
 
   if (!isOpen) return null;
 

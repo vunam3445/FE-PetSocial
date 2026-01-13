@@ -12,7 +12,7 @@ export const ChatTabs = ({ activeTab, onTabChange }: ChatTabsProps) => (
                    ? "text-blue-600 border-b-2 border-blue-600 bg-blue-50" 
                    : "text-gray-500 hover:text-gray-700"}`}
     >
-      Read
+      Tin nhắn
     </button>
     <button
       onClick={() => onTabChange("unread")}
@@ -21,7 +21,7 @@ export const ChatTabs = ({ activeTab, onTabChange }: ChatTabsProps) => (
                    ? "text-blue-600 border-b-2 border-blue-600 bg-blue-50" 
                    : "text-gray-500 hover:text-gray-700"}`}
     >
-      Unread
+      Tin nhắn chờ
     </button>
   </div>
 );

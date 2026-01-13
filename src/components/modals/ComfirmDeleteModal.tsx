@@ -12,12 +12,14 @@ interface ConfirmDeleteProps {
   open: boolean;
   onClose: () => void;
   onConfirm: () => void;
+  text?: string;
 }
 
 const ConfirmDelete: React.FC<ConfirmDeleteProps> = ({ 
   open, 
   onClose, 
-  onConfirm 
+  onConfirm,
+  text
 }) => {
   return (
     <Dialog
@@ -40,7 +42,7 @@ const ConfirmDelete: React.FC<ConfirmDeleteProps> = ({
         color: 'text.primary',
         pb: 2
       }}>
-        Bạn có chắc chắn muốn xoá này không?
+        {text? text: "Bạn có chắc chắn muốn xoá này không?"}
       </DialogTitle>
       
       {/* Middle Question */}
