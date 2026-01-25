@@ -4,35 +4,26 @@ import { GroupItemSkeleton } from "../skeleton/GroupItemSkeleton";
 interface GroupSectionProps {
   title: string;
   groups: Group[];
-  showViewAll?: boolean;
   loading?: boolean;
+  hasMore?: boolean;       
+  onLoadMore?: () => void;   
 }
+
+
 export const GroupSection = ({
   title,
   groups,
-  showViewAll = false,
-  loading = false,
+  loading,
+  hasMore,
+  onLoadMore,
 }: GroupSectionProps) => {
-    if (loading) {
-        Array.from({ length: 3 }).map((_, index) => (
-            <GroupItemSkeleton key={index} />
-        ));
-    }
   return (
     <div className="mb-6 last:mb-0">
-      <div className="flex items-center justify-between px-2 mb-3">
-        <h2 className="text-base font-semibold text-gray-900">{title}</h2>
-        {showViewAll && (
-          <a
-            href="#"
-            className="text-sm font-medium text-blue-600 hover:text-blue-700 hover:underline"
-          >
-            Xem tất cả
-          </a>
-        )}
-      </div>
+      <h2 className="px-2 mb-3 text-base font-semibold text-gray-900">{title}</h2>
+
       <div className="space-y-1">
-        {groups.map((group) => (
+        {/* ✅ Sử dụng Array.isArray để đảm bảo groups là mảng trước khi map */}
+        {Array.isArray(groups) && groups.map((group) => (
           <GroupItem
             key={group.group_id}
             href={`/groups/${group.group_id}`}
@@ -40,6 +31,18 @@ export const GroupSection = ({
             image={group.avatar_url || ""}
           />
         ))}
+
+        {loading && (
+          Array.from({ length: 2 }).map((_, index) => (
+            <GroupItemSkeleton key={`loading-${index}`} />
+          ))
+        )}
+
+        {!loading && hasMore && (
+          <button onClick={onLoadMore} className="w-full py-2 text-sm text-blue-600">
+            Xem thêm...
+          </button>
+        )}
       </div>
     </div>
   );

@@ -7,13 +7,12 @@ import type { Post } from "../../types/ResponsePost";
 import { useCreateComment } from "../../hooks/posts/useCreateComment";
 import { useComments } from "../../hooks/posts/useComment";
 import CommentSection from "../atoms/CommentSection";
-import type { CommentRes } from "../../types/Comment";
 
 interface Props {
   post: Post;
   open: boolean;
   onClose: () => void;
-  onCommentAdded?: (postId: string) => void; // 👈 thêm prop mới
+  onCommentAdded?: (postId: string) => void;
 }
 export default function PostDetailModal({
   post,
@@ -25,27 +24,26 @@ export default function PostDetailModal({
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const [selectedMediaIndex, setSelectedMediaIndex] = useState(0);
   const { createComment } = useCreateComment();
-  const { comments, loading: commentsLoading } = useComments(post.post_id);
-  const [localComments, setLocalComments] = useState<CommentRes[]>([]);
-
-  // ✅ Nếu post là share thì hiển thị post được share
+  const { comments, loading, hasMore, loadMore, setComments } = useComments(
+    post.post_id,
+  );
   const displayPost = post.shared_post ?? post;
   const sortedMedia = [...(displayPost.media || [])].sort(
-    (a, b) => a.order - b.order
+    (a, b) => a.order - b.order,
   );
 
   const handleAddComment = async (text: string) => {
     try {
       const newComment = await createComment(post.post_id, { content: text });
       if (newComment) {
-        setLocalComments((prev) => [newComment, ...prev]);
-        onCommentAdded?.(post.post_id); // 👈 báo cho ListPost biết
+        // Thêm vào đầu danh sách ngay lập tức
+        setComments((prev) => [newComment, ...prev]);
+        onCommentAdded?.(post.post_id);
       }
     } catch (err) {
-      console.error("Failed to add comment:", err);
+      console.error(err);
     }
   };
-
   return (
     <Modal open={open} onClose={onClose}>
       <Box
@@ -88,14 +86,14 @@ export default function PostDetailModal({
               setSelectedMediaIndex(
                 selectedMediaIndex === 0
                   ? sortedMedia.length - 1
-                  : selectedMediaIndex - 1
+                  : selectedMediaIndex - 1,
               )
             }
             onNext={() =>
               setSelectedMediaIndex(
                 selectedMediaIndex === sortedMedia.length - 1
                   ? 0
-                  : selectedMediaIndex + 1
+                  : selectedMediaIndex + 1,
               )
             }
           />
@@ -126,9 +124,11 @@ export default function PostDetailModal({
 
           <Box sx={{ flex: 1, p: 3, minHeight: 0 }}>
             <CommentSection
-              comments={[...localComments, ...comments]}
+              comments={comments} // Không cần localComments nữa vì setComments đã quản lý
               onAddComment={handleAddComment}
-              loading={commentsLoading}
+              loading={loading}
+              hasMore={hasMore}
+              onLoadMore={() => loadMore()}
             />
           </Box>
         </Box>

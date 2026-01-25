@@ -1,5 +1,5 @@
 import React from "react";
-
+import { useLocation } from "react-router-dom";
 import {
   Box,
   Typography,
@@ -60,6 +60,8 @@ export const PostHeaderModal: React.FC<PostHeaderProps> = ({
   onProfileChange,
   originalUser,
 }) => {
+  const location = useLocation();
+  const isGroupPage = location.pathname.startsWith("/groups");
   return (
     <Box sx={{ px: 3, pt: 2, pb: 1 }}>
       <Box
@@ -92,50 +94,52 @@ export const PostHeaderModal: React.FC<PostHeaderProps> = ({
           >
             {userName}
           </Typography>
-          <FormControl>
-            <Select
-              value={visibility}
-              onChange={(e) => onVisibilityChange(e.target.value)}
-              size="small"
-              IconComponent={KeyboardArrowDown}
-              sx={{
-                backgroundColor: "#f0f2f5",
-                border: "none",
-                borderRadius: 2,
-                minWidth: 100,
-                "& .MuiOutlinedInput-notchedOutline": { border: "none" },
-                "& .MuiSelect-select": {
-                  py: 0.5,
-                  px: 1.5,
-                  display: "flex",
-                  alignItems: "center",
-                  fontSize: "0.8rem",
-                  fontWeight: 500,
-                  color: "#65676b",
-                },
-              }}
-            >
-              {visibilityOptions.map((option) => (
-                <MenuItem
-                  key={option.value}
-                  value={option.value}
-                  sx={{
+          {!isGroupPage && (
+            <FormControl>
+              <Select
+                value={visibility}
+                onChange={(e) => onVisibilityChange(e.target.value)}
+                size="small"
+                IconComponent={KeyboardArrowDown}
+                sx={{
+                  backgroundColor: "#f0f2f5",
+                  border: "none",
+                  borderRadius: 2,
+                  minWidth: 100,
+                  "& .MuiOutlinedInput-notchedOutline": { border: "none" },
+                  "& .MuiSelect-select": {
+                    py: 0.5,
+                    px: 1.5,
                     display: "flex",
                     alignItems: "center",
-                    gap: 1.5,
-                    py: 1,
-                  }}
-                >
-                  {React.cloneElement(option.icon, {
-                    sx: { color: "#65676b" },
-                  })}
-                  <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                    {option.label}
-                  </Typography>
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+                    fontSize: "0.8rem",
+                    fontWeight: 500,
+                    color: "#65676b",
+                  },
+                }}
+              >
+                {visibilityOptions.map((option) => (
+                  <MenuItem
+                    key={option.value}
+                    value={option.value}
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 1.5,
+                      py: 1,
+                    }}
+                  >
+                    {React.cloneElement(option.icon, {
+                      sx: { color: "#65676b" },
+                    })}
+                    <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                      {option.label}
+                    </Typography>
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          )}
           {pets?.length > 0 && onProfileChange && originalUser && (
             <Select
               value={selectedProfileId}

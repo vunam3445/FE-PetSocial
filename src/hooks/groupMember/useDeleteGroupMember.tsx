@@ -18,5 +18,5 @@ export const useDeleteGroupMember = () => {
             setLoading(false);
         }
     }
-    return { loading, error, deleteGroupMember};
+    return { loading, error, deleteGroupMember, setError};
 };

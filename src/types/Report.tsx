@@ -1,28 +1,5 @@
-export interface ReportData {
-  reason: string;
-  description: string;
-}
 
-export interface ReportItem {
-  report_id: string;
-  post_id: string;
-  reported_by: string;
-  reason: string;
-  description: string;
-  status: "pending" | "approved" | "rejected";
-  handled_by: string | null;
-  handled_at: string | null;
-  created_at: string;
-  updated_at: string;
-  deleted_at: string | null;
-  reports_count: number;
-  comments_count: number;
-  likes_count: number;
-  is_liked: number;
-  is_owner: boolean;
-  post: Post;
-}
-export interface Post {
+export interface ReportedPost {
   post_id: string;
   author_id: string;
   pet_id: string | null;
@@ -33,18 +10,47 @@ export interface Post {
   status: "approved" | "pending" | "rejected";
   created_at: string;
   updated_at: string;
+  
+  // Các trường computed từ Repository
+  reports_count: number;
+  comments_count: number;
+  likes_count: number;
+  is_liked: number; // Backend trả về 0 hoặc 1
+  is_owner: boolean;
+
+  // Quan hệ
   media: Media[];
   author: User;
-  shared_post: Post | null;
+  shared_post: ReportedPost | null;
+  reports: ReportDetail[]; // Mảng các báo cáo chi tiết cho bài viết này
 }
-export interface Media {
-  media_id: string;
-  post_id: string;
-  url: string;
-  type: "image" | "video";
+export interface ReportedPostsResponse {
+  data: ReportedPost[];
+  current_page: number;
+  last_page: number;
+  total: number;
+  per_page: number;
 }
 export interface User {
   user_id: string;
   name: string;
   avatar_url: string;
+}
+
+export interface Media {
+  media_id: string;
+  post_id: string;
+  media_url: string;
+  media_type: "image" | "video"; // API trả về media_type
+  order: number;
+  created_at: string;
+  updated_at: string;
+}
+export interface ReportDetail {
+  report_id: string;
+  reportable_id: string;
+  reportable_type: string; // "App\\Models\\Post"
+  reason: string;
+  description: string | null;
+  created_at: string;
 }

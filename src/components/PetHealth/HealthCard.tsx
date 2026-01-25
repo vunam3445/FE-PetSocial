@@ -8,7 +8,7 @@ interface HealthCardProps {
   onEdit?: () => void; // <-- [NEW] Prop để sửa category/card
   onDeleteCategory?: () => void;
   children: React.ReactNode;
-  footer: React.ReactNode;
+  footer?: React.ReactNode;
   onViewLogs?: () => void;
 }
 

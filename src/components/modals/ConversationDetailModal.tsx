@@ -12,7 +12,7 @@ interface Props {
     title: string;
     avatarUrl: string;
     is_group: boolean;
-    created_by: string;
+    my_role: string;
   };
 }
 
@@ -45,6 +45,7 @@ export const ConversationDetailModal: React.FC<Props> = ({ conversation }) => {
   const handleOpenAddMember = () => {
     setIsAddModalOpen(true);
   };
+
   return (
     <div className="flex flex-col bg-white border border-gray-200 shadow-2xl w-96 h-96 rounded-t-xl">
       <ConversationHeader
@@ -54,7 +55,7 @@ export const ConversationDetailModal: React.FC<Props> = ({ conversation }) => {
         onClose={() => closeConversation(conversation.id)}
         is_group={conversation.is_group}
         onOpenModal={handleOpenGroupMember}
-        created_by={conversation.created_by}
+        my_role={conversation.my_role}
         onAddMember={handleOpenAddMember}
         onEditConversation={()=>{setOpenEditModal(true)}}
       />
@@ -65,7 +66,7 @@ export const ConversationDetailModal: React.FC<Props> = ({ conversation }) => {
           Đang tải tin nhắn...
         </div>
       ) : (
-        <ConversationMessages conversationId={conversation.id} />
+        <ConversationMessages conversationId={conversation.id} is_group={conversation.is_group}/>
       )}
 
       <ConversationFooter conversationId={conversation.id} />

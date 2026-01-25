@@ -57,6 +57,7 @@ export default function CommentItem({
     id: string;
     el: HTMLElement | null;
   }>({ id: "", el: null });
+  const userId = localStorage.getItem('user_id');
 
   // dialog state
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -148,7 +149,7 @@ export default function CommentItem({
           <Typography variant="body2">{comment.content}</Typography>
 
           {/* Nút 3 chấm cho comment cha */}
-          {hovered && (
+          {(hovered && userId === comment.user_id)&& (
             <IconButton
               size="small"
               sx={{ position: "absolute", top: 0, right: 0 }}
@@ -203,7 +204,7 @@ export default function CommentItem({
             textTransform: "none",
           }}
         >
-          Reply
+          Trả lời
         </Button>
       </Box>
 
@@ -298,7 +299,8 @@ export default function CommentItem({
                   </Typography>
 
                   {/* Nút 3 chấm cho reply */}
-                  <IconButton
+                  {userId === comment.user_id&&(
+                    <IconButton
                     size="small"
                     sx={{ position: "absolute", top: 0, right: 0 }}
                     onClick={(e) =>
@@ -310,6 +312,7 @@ export default function CommentItem({
                   >
                     <MoreVertIcon fontSize="small" />
                   </IconButton>
+                  )}
                 </Box>
               </Box>
 
@@ -325,25 +328,14 @@ export default function CommentItem({
                 <Typography variant="caption" color="text.secondary">
                   {formatTimeAgo(reply.created_at)}
                 </Typography>
-                <Button
-                  size="small"
-                  sx={{
-                    minWidth: "auto",
-                    p: 0,
-                    fontSize: "12px",
-                    fontWeight: 600,
-                    color: "text.secondary",
-                    textTransform: "none",
-                  }}
-                >
-                  Reply
-                </Button>
+                
               </Box>
             </Box>
           ))}
 
       {/* Menu cho reply */}
-      <Menu
+     {userId === comment.user_id&&(
+       <Menu
         anchorEl={replyMenu.el}
         open={Boolean(replyMenu.el)}
         onClose={() => setReplyMenu({ id: "", el: null })}
@@ -357,6 +349,7 @@ export default function CommentItem({
           Xoá phản hồi
         </MenuItem>
       </Menu>
+     )}
 
       {/* Nút xem thêm reply */}
       {showReplies && hasMore && (

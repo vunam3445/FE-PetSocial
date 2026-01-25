@@ -8,20 +8,21 @@ import { useUnfollow } from "../../hooks/follow/useUnfollow";
 export const UserSearchItem: React.FC<{ user: UserSearchResult }> = ({
   user,
 }) => {
-  const { follow,  error } = useFollow();
-  const { unfollow,  error: unfollowError } = useUnfollow();
+  const { follow, error } = useFollow();
+  const { unfollow, error: unfollowError } = useUnfollow();
   const [isFollowing, setIsFollowing] = React.useState(user.is_followed);
-  const [followersCount, setFollowersCount] = React.useState(user.followers_count);
+  const [followersCount, setFollowersCount] = React.useState(
+    user.followers_count,
+  );
   const handleFollow = async (e: React.MouseEvent) => {
     e.preventDefault();
     const result = await follow(user.user_id);
     if (result) {
       setIsFollowing(true);
       setFollowersCount((prev) => prev + 1);
-    }else{
+    } else {
       console.log(error);
     }
-     
   };
   const handleUnfollow = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -29,7 +30,7 @@ export const UserSearchItem: React.FC<{ user: UserSearchResult }> = ({
     if (result) {
       setIsFollowing(false);
       setFollowersCount((prev) => prev - 1);
-    } else{
+    } else {
       console.log(unfollowError);
     }
   };
@@ -52,7 +53,7 @@ export const UserSearchItem: React.FC<{ user: UserSearchResult }> = ({
             />
           ) : (
             <div className="flex items-center justify-center w-12 h-12 font-semibold text-white bg-gray-400 rounded-full">
-              {user.name.charAt(0).toUpperCase()}
+              {user.name ? user.name.charAt(0).toUpperCase() : "?"}{" "}
             </div>
           )}
         </div>
@@ -81,11 +82,17 @@ export const UserSearchItem: React.FC<{ user: UserSearchResult }> = ({
         {/* Button */}
         <div className="flex-shrink-0 mr-2">
           {isFollowing ? (
-            <button className="px-4 py-2 text-sm font-medium text-white transition-colors bg-blue-600 rounded-lg hover:bg-blue-700" onClick={handleUnfollow}>
+            <button
+              className="px-4 py-2 text-sm font-medium text-white transition-colors bg-blue-600 rounded-lg hover:bg-blue-700"
+              onClick={handleUnfollow}
+            >
               Đang theo dõi
             </button>
           ) : (
-            <button className="px-4 py-2 text-sm font-medium text-blue-600 transition-colors border border-blue-600 rounded-lg hover:bg-blue-50" onClick={handleFollow}>
+            <button
+              className="px-4 py-2 text-sm font-medium text-blue-600 transition-colors border border-blue-600 rounded-lg hover:bg-blue-50"
+              onClick={handleFollow}
+            >
               Theo dõi
             </button>
           )}

@@ -17,3 +17,9 @@ export const changeStatusPost=(postId: string, data: any)=>{
     const res = api.put(url, data);
     return res;
 }
+
+export const resetSeed=async()=>{
+    const url = `/posts/refresh`;
+    const res = await api.post(url);
+    return res;
+}

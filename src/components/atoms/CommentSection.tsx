@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import {
-  Avatar,
   Box,
   IconButton,
   Paper,
@@ -19,16 +18,20 @@ export default function CommentSection({
   comments,
   onAddComment,
   loading = false,
+  hasMore,     // 👈 Thêm prop
+  onLoadMore,
 }: {
   comments: CommentRes[];
   onAddComment: (text: string) => void;
   loading?: boolean;
+  hasMore: boolean;
+  onLoadMore: () => void;
 }) {
   const [newComment, setNewComment] = useState("");
   const [toastOpen, setToastOpen] = useState(false);
   const [toastText, setToastText] = useState("");
   const [commentList, setCommentList] = useState<CommentRes[]>(comments);
-
+  
   // state cho dialog
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [selectedCommentId, setSelectedCommentId] = useState<string | null>(
@@ -78,7 +81,18 @@ export default function CommentSection({
       setSelectedCommentId(null);
     }
   };
+const observer = useRef<IntersectionObserver | null>(null);
+  const lastCommentRef = useCallback((node: HTMLDivElement) => {
+    if (loading) return;
+    if (observer.current) observer.current.disconnect();
 
+    observer.current = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting && hasMore) {
+        onLoadMore();
+      }
+    });
+    if (node) observer.current.observe(node);
+  }, [loading, hasMore, onLoadMore]);
   // Reply cho comment
   const handleReply = async (
     parentId: string,
@@ -113,13 +127,15 @@ export default function CommentSection({
             <CommentSkeleton />
           </>
         ) : (
-          commentList.map((comment) => (
+          commentList.map((comment, index) => (
+            <div key={comment.comment_id} ref={index === comments.length - 1 ? lastCommentRef : null}>
             <CommentItem
               key={comment.comment_id}
               comment={comment}
               onReply={handleReply}
-              onDeleteComment={(id) => handleOpenDeleteDialog(id)} // 👈 đúng prop
+              onDeleteComment={handleOpenDeleteDialog}
             />
+          </div>
           ))
         )}
       </Box>

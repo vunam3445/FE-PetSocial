@@ -1,30 +1,51 @@
 import React, { useState, useEffect } from 'react';
-import type { ReportData } from '../../types/Report';
-// Định nghĩa các lý do report
+
+// Danh sách các lý do báo cáo
 const REPORT_REASONS = [
   { id: 'spam', label: 'Spam hoặc lừa đảo' },
   { id: 'harassment', label: 'Quấy rối hoặc bắt nạt' },
   { id: 'hate_speech', label: 'Ngôn từ gây thù ghét' },
   { id: 'violence', label: 'Bạo lực hoặc nguy hiểm' },
   { id: 'nudity', label: 'Ảnh khỏa thân hoặc tình dục' },
-  { id: 'other', label: 'Vấn đề khác' }, // ID này sẽ kích hoạt ô nhập text
+  { id: 'other', label: 'Vấn đề khác' },
 ];
 
 interface ReportModalProps {
   isOpen: boolean;
   onClose: () => void;
-  postId?: string | number;
-  onSubmit: (data: ReportData) => void;
+  // Thay thế postId bằng cấu trúc đa hình
+  targetId: string | number; 
+  targetType: 'post' | 'user' | 'group' | 'comment'; 
+  onSubmit: (data: {
+    reportable_id: string | number;
+    reportable_type: string;
+    reason: string;
+    description: string;
+  }) => void;
 }
 
-
-
-const ReportModal: React.FC<ReportModalProps> = ({ isOpen, onClose, postId, onSubmit }) => {
+const ReportModal: React.FC<ReportModalProps> = ({ 
+  isOpen, 
+  onClose, 
+  targetId, 
+  targetType, 
+  onSubmit 
+}) => {
   const [selectedReason, setSelectedReason] = useState<string>('');
   const [description, setDescription] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Reset state khi mở modal
+  // Lấy tiêu đề động dựa trên loại đối tượng
+  const getTitle = () => {
+    switch (targetType) {
+      case 'user': return 'Báo cáo người dùng';
+      case 'group': return 'Báo cáo nhóm';
+      case 'comment': return 'Báo cáo bình luận';
+      default: return 'Báo cáo bài viết';
+    }
+  };
+
+  // Reset state khi đóng/mở modal
   useEffect(() => {
     if (isOpen) {
       setSelectedReason('');
@@ -38,30 +59,36 @@ const ReportModal: React.FC<ReportModalProps> = ({ isOpen, onClose, postId, onSu
   const handleSubmit = () => {
     if (!selectedReason) return;
     
-    // Nếu chọn 'other' mà chưa nhập lý do thì có thể chặn lại (tùy logic của bạn)
     if (selectedReason === 'other' && !description.trim()) {
       alert("Vui lòng nhập chi tiết vấn đề.");
       return;
     }
 
     setIsSubmitting(true);
-    const data = {reason: selectedReason,description:description}
-    onSubmit(data);
-      onClose();
-      setIsSubmitting(false);
-    
+
+    // Gửi dữ liệu theo cấu trúc đa hình cho Backend
+    onSubmit({
+      reportable_id: targetId,
+      reportable_type: targetType, // Backend sẽ map giá trị này sang Model Class tương ứng
+      reason: selectedReason,
+      description: description
+    });
+
+    // Các logic sau khi submit thành công thường được xử lý ở component cha 
+    // nhưng ở đây ta đóng modal để tối ưu UX
+    onClose();
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 transition-opacity bg-black bg-opacity-50">
-      <div className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden flex flex-col max-h-[90vh]">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm transition-all">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden flex flex-col max-h-[90vh] animate-in fade-in zoom-in duration-200">
         
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 shrink-0">
-          <h3 className="text-lg font-bold text-gray-800">Báo cáo bài viết</h3>
+        <div className="sticky top-0 z-10 flex items-center justify-between px-6 py-4 bg-white border-b border-gray-100">
+          <h3 className="text-xl font-bold text-gray-900">{getTitle()}</h3>
           <button 
             onClick={onClose}
-            className="text-gray-400 transition-colors hover:text-gray-600 focus:outline-none"
+            className="p-1 text-gray-400 transition-all rounded-full hover:bg-gray-100 hover:text-gray-600"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -69,20 +96,20 @@ const ReportModal: React.FC<ReportModalProps> = ({ isOpen, onClose, postId, onSu
           </button>
         </div>
 
-        {/* Body - Có thể cuộn nếu nội dung dài */}
-        <div className="p-6 overflow-y-auto">
-          <p className="mb-4 text-sm font-medium text-gray-600">
-            Hãy chọn vấn đề bạn đang gặp phải:
+        {/* Body */}
+        <div className="p-6 space-y-4 overflow-y-auto">
+          <p className="text-sm font-medium text-gray-500">
+            Tại sao bạn muốn báo cáo nội dung này?
           </p>
 
-          <div className="space-y-3">
+          <div className="space-y-2">
             {REPORT_REASONS.map((reason) => (
               <label 
                 key={reason.id} 
-                className={`flex items-center p-3 rounded-lg border cursor-pointer transition-all ${
+                className={`group flex items-center p-4 rounded-xl border-2 cursor-pointer transition-all ${
                   selectedReason === reason.id 
-                    ? 'border-blue-500 bg-blue-50 ring-1 ring-blue-500' 
-                    : 'border-gray-200 hover:bg-gray-50'
+                    ? 'border-red-500 bg-red-50/50' 
+                    : 'border-gray-50 hover:border-gray-200 hover:bg-gray-50'
                 }`}
               >
                 <input
@@ -92,53 +119,53 @@ const ReportModal: React.FC<ReportModalProps> = ({ isOpen, onClose, postId, onSu
                   checked={selectedReason === reason.id}
                   onChange={(e) => {
                     setSelectedReason(e.target.value);
-                    // Reset description nếu chuyển sang lý do khác 'other' (tuỳ chọn)
                     if (e.target.value !== 'other') setDescription('');
                   }}
-                  className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                  className="w-5 h-5 text-red-600 border-gray-300 focus:ring-red-500"
                 />
-                <span className="ml-3 text-sm font-medium text-gray-700">{reason.label}</span>
+                <span className={`ml-3 text-base font-semibold ${
+                  selectedReason === reason.id ? 'text-red-700' : 'text-gray-700'
+                }`}>
+                  {reason.label}
+                </span>
               </label>
             ))}
           </div>
 
-          {/* Chỉ hiển thị textarea khi chọn 'other' */}
-          {selectedReason === 'other' && (
-            <div className="mt-4 animate-fade-in-down">
-              <label className="block mb-2 text-sm font-medium text-gray-700">
-                Mô tả chi tiết <span className="text-red-500">*</span>
+          {/* Textarea khi chọn lý do khác hoặc bổ sung chi tiết */}
+          {(selectedReason === 'other' || selectedReason !== '') && (
+            <div className="mt-4 space-y-2">
+              <label className="ml-1 text-sm font-bold text-gray-700">
+                {selectedReason === 'other' ? 'Mô tả chi tiết *' : 'Ghi chú thêm (không bắt buộc)'}
               </label>
               <textarea
-                className="w-full p-3 text-sm transition-all border border-gray-300 rounded-lg outline-none resize-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                rows={3}
-                placeholder="Vui lòng cho chúng tôi biết cụ thể vấn đề là gì..."
+                className="w-full p-4 text-sm bg-gray-50 border-2 border-gray-100 rounded-xl outline-none resize-none focus:border-red-500 focus:bg-white transition-all min-h-[100px]"
+                placeholder="Vui lòng cung cấp thêm thông tin để chúng tôi xử lý nhanh hơn..."
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                autoFocus
               />
             </div>
           )}
         </div>
 
         {/* Footer */}
-        <div className="flex justify-end gap-3 px-6 py-4 border-t border-gray-100 bg-gray-50 shrink-0">
+        <div className="flex items-center gap-3 px-6 py-4 border-t border-gray-100 bg-gray-50/50">
           <button
             onClick={onClose}
-            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none"
+            className="flex-1 px-4 py-3 text-sm font-bold text-gray-600 transition-all bg-white border border-gray-200 rounded-xl hover:bg-gray-100"
           >
             Hủy
           </button>
           <button
             onClick={handleSubmit}
-            // Disable nếu chưa chọn lý do HOẶC (chọn 'other' mà chưa nhập description)
             disabled={!selectedReason || (selectedReason === 'other' && !description.trim()) || isSubmitting}
-            className={`px-4 py-2 text-sm font-medium text-white rounded-lg focus:outline-none transition-colors ${
+            className={`flex-[2] px-4 py-3 text-sm font-bold text-white rounded-xl shadow-lg shadow-red-200 transition-all ${
               !selectedReason || (selectedReason === 'other' && !description.trim()) || isSubmitting
-                ? 'bg-blue-300 cursor-not-allowed'
-                : 'bg-blue-600 hover:bg-blue-700'
+                ? 'bg-red-300 cursor-not-allowed shadow-none'
+                : 'bg-red-600 hover:bg-red-700 active:scale-95'
             }`}
           >
-            {isSubmitting ? 'Đang gửi...' : 'Gửi báo cáo'}
+            {isSubmitting ? 'Đang xử lý...' : 'Gửi yêu cầu'}
           </button>
         </div>
       </div>

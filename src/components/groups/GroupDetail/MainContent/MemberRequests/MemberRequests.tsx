@@ -1,4 +1,4 @@
-import  { useState, useEffect, useRef , useCallback} from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useGetJoinRequests } from "../../../../../hooks/group/useGetJoinRequests";
 import type { Group } from "../../../../../types/Group";
 import { RequestHeader } from "./RequestHeader";
@@ -10,9 +10,13 @@ import { useSearchRequestJoinGroup } from "../../../../../hooks/search/useSearch
 
 interface MemberRequestProp {
   groupInfo: Group;
+  onActionSuccess?: () => void;
 }
 
-export const MemberRequests = ({ groupInfo }: MemberRequestProp) => {
+export const MemberRequests = ({
+  groupInfo,
+  onActionSuccess,
+}: MemberRequestProp) => {
   // Chỉ sử dụng hook Search vì nó bao quát cả lấy dữ liệu ban đầu (keyword = "")
   const {
     data,
@@ -26,8 +30,10 @@ export const MemberRequests = ({ groupInfo }: MemberRequestProp) => {
   } = useSearchRequestJoinGroup(groupInfo.group_id);
 
   const [searchTerm, setSearchTerm] = useState("");
-  const [expandedRequestId, setExpandedRequestId] = useState<string | null>(null);
-  const [totalRequest, setTotalRequest] = useState<number>(pagination?.total || 0);
+  const [expandedRequestId, setExpandedRequestId] = useState<number | null>(
+    null,
+  );
+
   const observerRef = useRef<IntersectionObserver | null>(null);
 
   // Xử lý Search: Chỉ thực thi khi ấn Enter
@@ -52,8 +58,8 @@ export const MemberRequests = ({ groupInfo }: MemberRequestProp) => {
 
       observerRef.current = new IntersectionObserver((entries) => {
         if (
-          entries[0].isIntersecting && 
-          pagination && 
+          entries[0].isIntersecting &&
+          pagination &&
           page < pagination.last_page
         ) {
           setPage((prev) => prev + 1);
@@ -62,31 +68,38 @@ export const MemberRequests = ({ groupInfo }: MemberRequestProp) => {
 
       if (node) observerRef.current.observe(node);
     },
-    [loading, pagination, page]
+    [loading, pagination, page],
   );
 
   const handleApprove = async (r: JoinRequest) => {
-    await updateRequest(r.request_id, {
+    const res = await updateRequest(r.request_id, {
       group_id: groupInfo.group_id,
       user_id: r.user_id,
       status: "approved",
     });
-    setData((prev) => prev.filter((p) => p.request_id !== r.request_id));
+    // Giả sử updateRequest trả về truthy khi thành công
+    if (res) {
+      setData((prev) => prev.filter((p) => p.request_id !== r.request_id));
+      onActionSuccess?.(); // Gọi hàm giảm số lượng ở Sidebar
+    }
   };
 
   const handleDecline = async (r: JoinRequest) => {
-    await updateRequest(r.request_id, {
+    const res = await updateRequest(r.request_id, {
       group_id: groupInfo.group_id,
       user_id: r.user_id,
       status: "rejected",
     });
-    setData((prev) => prev.filter((p) => p.request_id !== r.request_id));
+    if (res) {
+      setData((prev) => prev.filter((p) => p.request_id !== r.request_id));
+      onActionSuccess?.(); // Gọi hàm giảm số lượng ở Sidebar
+    }
   };
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 min-h-[500px]">
       <RequestHeader
-        totalCount={totalRequest}
+        totalCount={pagination?.total || 0}
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
         onSearchSubmit={handleSearchSubmit}
@@ -100,18 +113,20 @@ export const MemberRequests = ({ groupInfo }: MemberRequestProp) => {
           </div>
         ) : (
           data.map((req, index) => {
-            // Kiểm tra nếu là item thứ 14, 28, 42... (index 13, 27, 41...)
-            const isTriggerItem = (index + 1) % 14 === 0;
             
+            const isTriggerItem = data.length - 3;
+
             return (
-              <div 
-                key={`${req.request_id}-${index}`} 
+              <div
+                key={`${req.request_id}-${index}`}
                 ref={isTriggerItem ? lastElementRef : null}
               >
                 <RequestItem
                   request={req}
                   isExpanded={expandedRequestId === req.request_id}
-                  onToggleExpand={(id) => setExpandedRequestId(prev => prev === id ? null : id)}
+                  onToggleExpand={(id) =>
+                    setExpandedRequestId((prev) => (prev === id ? null : id))
+                  }
                   onApprove={handleApprove}
                   onDecline={handleDecline}
                 />

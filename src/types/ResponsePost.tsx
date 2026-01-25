@@ -35,10 +35,12 @@ export interface Pet {
 export type Post = {
   post_id: string;
   author_id: string;
+  pet_id: string | null;
   caption: string | null;
   visibility: "public" | "friends" | "private";
   shared_post_id: string | null;
   group_id: string | null;
+  status: string;
   created_at: string;
   updated_at: string;
   media: Media[];
@@ -47,9 +49,9 @@ export type Post = {
   pet?: Pet | null;
   likes_count: number;
   is_liked: number;
+  is_owner?: boolean;
   comments_count: number;
-
-  // 👇 thêm post gốc khi share
+  group?:Group | null;
   shared_post?: Post | null;
 };
 
@@ -83,3 +85,8 @@ export type PaginatedPostsResponse = {
     total: number;
   };
 };
+
+export type Group = {
+  group_id: string;
+  name: string;
+}

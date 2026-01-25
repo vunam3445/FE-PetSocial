@@ -1,14 +1,15 @@
-// src/components/dashboard/FeatherConditionCard.tsx
-import React from "react";
+import React, { useState } from "react";
 import { HealthCard } from "./HealthCard";
 import type { HealthCategory } from "../../types/Pet";
+import { Box, Modal, IconButton } from "@mui/material"; // Thêm Modal và IconButton
+import CloseIcon from "@mui/icons-material/Close"; // Cần cài @mui/icons-material nếu chưa có
 
 interface FeatherConditionCardProps {
   healthLogs?: HealthCategory;
   onOpenLogModal: (category: string) => void;
-  onDeleteCategory: () => void; // Thêm prop xóa (tùy chọn) nếu cần
-  onViewLogsList?: (category: HealthCategory) => void; // NEW: Mở danh sách log
-  onEdit?: () => void; // NEW: Xử lý sửa category
+  onDeleteCategory: () => void;
+  onViewLogsList?: (category: HealthCategory) => void;
+  onEdit?: () => void;
   isOwner: boolean;
 }
 
@@ -18,75 +19,116 @@ export const FeatherConditionCard: React.FC<FeatherConditionCardProps> = ({
   onDeleteCategory,
   onViewLogsList,
   onEdit,
-  isOwner
+  isOwner,
 }) => {
-  // Sắp xếp logs: Gần nhất lên đầu để xem tình trạng hiện tại
-  const sortedLogs = healthLogs?.health_logs.sort(
-    (a, b) =>
-      new Date(b.recorded_at).getTime() - new Date(a.recorded_at).getTime()
-  );
+  // State để quản lý Modal xem ảnh
+  const [selectedImg, setSelectedImg] = useState<string | null>(null);
 
-  const footer = (
-    <p className="text-sm text-gray-600">
-      Tình trạng gần nhất:{" "}
-      <span className="font-medium text-green-600">
-        {sortedLogs?.[0]?.title || "Chưa cập nhật"}
-      </span>
-    </p>
-  );
+  const handleOpenImage = (url: string) => setSelectedImg(url);
+  const handleCloseImage = () => setSelectedImg(null);
 
   return (
-    <HealthCard
-      isOwner={isOwner}
-      title={healthLogs?.name || "Tình trạng Lông & Da"}
-      onAddLog={() => onOpenLogModal("Tình trạng Lông & Da")}
-      onDeleteCategory={onDeleteCategory}
-      footer={footer}
-      onViewLogs={() =>
-        healthLogs && onViewLogsList && onViewLogsList(healthLogs)
-      } // NEW: Truyền action xem log
-      onEdit={onEdit}
-    >
-      <div className="space-y-6">
-        {/* Render danh sách Log */}
-        {sortedLogs?.map((log, index) => {
-          // Giới hạn chiều dài để tránh làm card quá dài khi description dài
-          const isLongDescription = (log.description?.length || 0) > 150;
+    <>
+      <HealthCard
+        isOwner={isOwner}
+        title={healthLogs?.name || "Tình trạng Lông & Da"}
+        onAddLog={() => onOpenLogModal(healthLogs?.name || "Tình trạng Lông & Da")}
+        onDeleteCategory={onDeleteCategory}
+        onViewLogs={() => healthLogs && onViewLogsList && onViewLogsList(healthLogs)}
+        onEdit={onEdit}
+      >
+        <div className="space-y-6">
+          {healthLogs?.health_logs?.map((log, index) => {
+            const isLongDescription = (log.description?.length || 0) > 150;
+            return (
+              <div key={index} className="pl-3 border-l-4 border-indigo-200">
+                <div className="flex gap-3">
+                  {/* 1. Phần Ảnh (bên trái) */}
+                  {log.image_url && (
+                    <Box
+                      onClick={() => handleOpenImage(log.image_url!)} // Click để mở Modal
+                      sx={{
+                        width: 70,
+                        height: 70,
+                        borderRadius: 1.5,
+                        overflow: "hidden",
+                        border: "1px solid #e0e0e0",
+                        flexShrink: 0,
+                        cursor: "pointer", // Thêm con trỏ tay
+                        "&:hover": { opacity: 0.8, transition: "0.3s" },
+                      }}
+                    >
+                      <img
+                        src={log.image_url}
+                        alt={log.title}
+                        style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                      />
+                    </Box>
+                  )}
 
-          return (
-            <div key={index} className="pl-3 border-l-4 border-indigo-200">
-              {/* Tiêu đề & Ngày: Title to hơn, ngày nhỏ hơn và màu xám nhạt */}
-              <div className="flex items-start justify-between mb-1">
-                <p className="pr-2 text-base font-semibold text-gray-800 break-words">
-                  {/* Ngày tháng: Màu xanh nổi bật */}
-                  <span className="pr-1 text-sm font-medium text-blue-500">
-                    {log.recorded_at}
-                  </span>
-                  {/* Tiêu đề: Giữ nguyên màu đen đậm (text-gray-800) */}
-                  {log.title}
-                </p>
-              </div>
-
-              {/* Mô tả (Description) */}
-              {log.description && (
-                <div
-                  className={`text-gray-600 bg-gray-50 p-2 rounded-md transition duration-300 ${
-                    isLongDescription ? "max-h-24 overflow-y-auto" : "" // Áp dụng cuộn nếu quá dài
-                  }`}
-                  title={log.description} // Hiển thị toàn bộ khi hover (tooltip)
-                >
-                  <p className="text-sm">{log.description}</p>
+                  {/* 2. Phần Nội dung */}
+                  <div className="flex-1 min-w-0">
+                    <div className="mb-1">
+                      <p className="text-base font-semibold text-gray-800 break-words">
+                        <span className="pr-1 text-sm font-medium text-blue-500">
+                          {log.recorded_at}
+                        </span>
+                        {log.title}
+                      </p>
+                    </div>
+                    {log.description && (
+                      <div
+                        className={`text-gray-600 bg-gray-50 p-2 rounded-md transition duration-300 ${
+                          isLongDescription ? "max-h-24 overflow-y-auto" : ""
+                        }`}
+                      >
+                        <p className="text-sm leading-relaxed">{log.description}</p>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              )}
-            </div>
-          );
-        })}
+              </div>
+            );
+          })}
 
-        {/* Xử lý trường hợp không có logs */}
-        {sortedLogs?.length === 0 && (
-          <p className="italic text-gray-500">Chưa có log.</p>
-        )}
-      </div>
-    </HealthCard>
+          {healthLogs?.health_logs?.length === 0 && (
+            <p className="italic text-gray-500">Chưa có log.</p>
+          )}
+        </div>
+      </HealthCard>
+
+      {/* MODAL HIỂN THỊ ẢNH */}
+      <Modal
+        open={!!selectedImg}
+        onClose={handleCloseImage}
+        sx={{ display: "flex", alignItems: "center", justifyContent: "center", bgcolor: "rgba(0,0,0,0.85)" }}
+      >
+        <Box sx={{ position: "relative", outline: "none", maxWidth: "90vw", maxHeight: "90vh" }}>
+          {/* Nút đóng Modal */}
+          <IconButton
+            onClick={handleCloseImage}
+            sx={{ position: "absolute", top: -40, right: -40, color: "white" }}
+          >
+            <CloseIcon />
+          </IconButton>
+
+          {/* Ảnh phóng to */}
+          {selectedImg && (
+            <img
+              src={selectedImg}
+              alt="Preview"
+              style={{
+                width: "100%",
+                height: "auto",
+                maxHeight: "85vh",
+                objectFit: "contain",
+                borderRadius: "8px",
+                display: "block",
+              }}
+            />
+          )}
+        </Box>
+      </Modal>
+    </>
   );
 };

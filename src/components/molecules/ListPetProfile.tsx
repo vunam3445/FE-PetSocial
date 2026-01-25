@@ -69,9 +69,9 @@ export const ListPetProfile = () => {
       />
       {loading && <LoadingSpinner />}
       {pets.length === 0 && !loading && (
-        <div className="text-center text-gray-500">
-          Bạn chưa có thú cưng nào.
-        </div>
+          <div className="py-10 text-center">
+            <p className="font-medium text-gray-500">Người dùng này chưa có thú cưng nào.</p>
+          </div>
       )}
     </div>
   );

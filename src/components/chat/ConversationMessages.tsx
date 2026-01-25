@@ -4,8 +4,10 @@ import { useEffect, useRef, useState, UIEvent } from "react";
 
 export const ConversationMessages = ({
   conversationId,
+  is_group,
 }: {
   conversationId: string;
+  is_group: boolean;
 }) => {
   const { messages, fetchMessages } = useChat();
   const conversationMessages = messages[conversationId] || [];
@@ -121,8 +123,8 @@ export const ConversationMessages = ({
           time={msg.time || ""}
           avatarUrl={msg.avatarUrl}
           pending={msg.pending}
-          // Thêm data attribute để có thể query trong alternative approach
           data-message={index}
+          is_group={is_group}
         />
       ))}
 

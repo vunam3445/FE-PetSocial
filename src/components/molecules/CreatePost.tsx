@@ -54,7 +54,6 @@ if ((!formDataFromModal.caption || formDataFromModal.caption.trim() === "")
 }
     try {
       const submitData: SubmitData = {
-
         author_id: userId,
         caption: formDataFromModal.caption,
         visibility: formDataFromModal.visibility,
@@ -63,9 +62,8 @@ if ((!formDataFromModal.caption || formDataFromModal.caption.trim() === "")
         media: formDataFromModal.media,
         pet_id: formDataFromModal.pet_id,
       };
-      console.log("Submit data prepared:", submitData);
       const res = await createPost(submitData);
-      if (res) {
+      if (res && res.pet_id === null) {
         onPostCreated(res);
       }
       setOpenModal(false);

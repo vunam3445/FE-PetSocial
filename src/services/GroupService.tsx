@@ -1,4 +1,3 @@
-import { gridClasses } from "@mui/material";
 import api from "../lib/axios";
 import type { Group } from "../types/Group";
 export const CreateGroup = async (name: string, visibility: string, created_by: string) => {
@@ -8,14 +7,14 @@ export const CreateGroup = async (name: string, visibility: string, created_by: 
     return response.data;
 };
 
-export const GetGroupsByUser = async (userId: string) => {
-  const url = `/users/${userId}/groups`;
+export const GetGroupsByUser = async (userId: string,page:number) => {
+  const url = `/users/${userId}/groups?page=${page}`;
     const response = await api.get(url);
     return response.data;
 }
 
-export const GetGroupOfUserAttend = async (userId: string) => {
-  const url = `/users/${userId}/groups-attended`;
+export const GetGroupOfUserAttend = async (userId: string,page:number) => {
+  const url = `/users/${userId}/groups-attended?page=${page}`;
     const response = await api.get(url);
     return response.data;
 }

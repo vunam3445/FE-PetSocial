@@ -6,6 +6,7 @@ import { useGetMyNotification } from "../../hooks/notification/useGetMyNotificat
 import { useReadNotification } from "../../hooks/notification/useReadNotification";
 import { useChat } from "../../contexts/ChatContext";
 import type { NotificationItem } from "../../types/Notification";
+import { ChangePasswordModal } from "../modals/ChangePasswordModal";
 export const Header = () => {
   const [params] = useSearchParams();
   const [keyword, setKeyword] = useState("");
@@ -15,15 +16,17 @@ export const Header = () => {
   const user_id = localStorage.getItem("user_id") || "";
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement | null>(null);
-  const { unreadNotificationsCount: socketCount, notifications: socketNotis} =
+  const { unreadNotificationsCount: socketCount, notifications: socketNotis } =
     useChat();
   const {
     notifications: apiNotis,
     unreadCount,
     setUnreadCount,
+    loadMore, // Lấy thêm hàm này
+    hasMore, // Lấy thêm biến này
+    loading: apiLoading, // Lấy thêm biến này
   } = useGetMyNotification(user_id);
-  const [unread, setUnread] = useState(0);
-
+  const [changePassword, setChangePassword] = useState(false);
   const [localNotifications, setLocalNotifications] = useState<
     NotificationItem[]
   >([]);
@@ -42,13 +45,13 @@ export const Header = () => {
     // Lọc trùng theo ID để tránh việc socket và api cùng trả về 1 tin khi reload
     const allNotis = [...socketNotis, ...apiNotis];
     const uniqueNotis = Array.from(
-      new Map(allNotis.map((item) => [item.id, item])).values()
+      new Map(allNotis.map((item) => [item.id, item])).values(),
     );
 
     // Sắp xếp theo thời gian mới nhất (nếu cần)
     const sorted = uniqueNotis.sort(
       (a, b) =>
-        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
     );
 
     setLocalNotifications(sorted);
@@ -78,7 +81,7 @@ export const Header = () => {
         }
 
         return updatedItem;
-      })
+      }),
     );
 
     // 2. Gọi API để đồng bộ với Server
@@ -119,7 +122,7 @@ export const Header = () => {
     const currentType = params.get("type") || "post";
 
     navigate(
-      `/search?type=${currentType}&keyword=${encodeURIComponent(keyword)}`
+      `/search?type=${currentType}&keyword=${encodeURIComponent(keyword)}`,
     );
   };
   const handleLogout = () => {
@@ -138,6 +141,7 @@ export const Header = () => {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200 shadow-sm">
       <div className="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
@@ -231,6 +235,9 @@ export const Header = () => {
                   <NotificationList
                     notifications={localNotifications}
                     handleClick={handleClick}
+                    loadMore={loadMore}
+                    hasMore={hasMore}
+                    isLoading={apiLoading}
                   />
                 </div>
               )}
@@ -298,6 +305,14 @@ export const Header = () => {
                   >
                     Đăng xuất
                   </button>
+                  <button
+                    onClick={() => {
+                      setChangePassword(true);
+                    }}
+                    className="w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-100"
+                  >
+                    Đổi mật khẩu
+                  </button>
                 </div>
               )}
             </div>
@@ -308,8 +323,12 @@ export const Header = () => {
       {isChatOpen && (
         <ChatModal open={isChatOpen} onClose={() => setIsChatOpen(false)} />
       )}
-
-      
+      <ChangePasswordModal
+        open={changePassword}
+        onClose={() => {
+          setChangePassword(false);
+        }}
+      />
     </header>
   );
 };

@@ -15,7 +15,7 @@ export const Home = () => {
       <div className="min-h-screen pt-16">
         <div className="flex mx-auto max-w-7xl">
           <Sidebar />
-          <TabletSidebar />
+          {/* <TabletSidebar /> */}
 
           <main className="flex-1 p-4 lg:w-1/2 lg:p-6">
             <CreatePost onPostCreated={(post) => setNewPost(post)} />

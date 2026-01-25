@@ -1,11 +1,13 @@
 import { useEffect, useState, type ChangeEvent, type FormEvent } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link} from "react-router-dom";
 import { loginUser } from "../../services/authService";
 import { LoadingOverlay } from "../loadings/LoadingOverlay";
-
+import ErrorToast from "../toasts/ErrorToast";
 export const LoginForm = ({ prefillEmail }: { prefillEmail: string }) => {
   const [form, setForm] = useState({ email: prefillEmail, password: "" });
   const [loading, setLoading] = useState(false);
+  const [errorToast, setErrorToast] = useState(false);
+  const [errorText, setErrorText] = useState<string>("");
   const navigate = useNavigate();
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -22,7 +24,8 @@ export const LoginForm = ({ prefillEmail }: { prefillEmail: string }) => {
     if (result.success) {
       navigate("/");
     } else {
-      alert(result.message);
+      setErrorText(result.message);
+      setErrorToast(true);
     }
   };
 
@@ -60,6 +63,14 @@ export const LoginForm = ({ prefillEmail }: { prefillEmail: string }) => {
             className="w-full px-4 py-3 border border-gray-300 outline-none rounded-xl focus:ring-2 focus:ring-blue-500"
             placeholder="Nhập mật khẩu"
           />
+          <div className="flex justify-end mt-2">
+            <Link
+              to="/forgot-password"
+              className="text-sm font-medium text-blue-600 transition-colors hover:text-blue-500 hover:underline"
+            >
+              Quên mật khẩu?
+            </Link>
+          </div>
         </div>
         <button
           type="submit"
@@ -69,6 +80,11 @@ export const LoginForm = ({ prefillEmail }: { prefillEmail: string }) => {
           Đăng nhập
         </button>
       </form>
+      <ErrorToast
+        open={errorToast}
+        onClose={()=>{setErrorToast(false)}}
+        text={errorText}
+      />
     </>
   );
 };

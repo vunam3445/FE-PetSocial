@@ -30,6 +30,7 @@ interface HealthCardGridProps {
   healthData?: HealthCategoryList;
   onDeleteCategory: (categoryId: string) => void;
   onOpenEditCategory?: (categoryId: string) => void;
+  onRefresh: ()=>void;
 }
 
 export const HealthCardGrid: React.FC<HealthCardGridProps> = ({
@@ -40,11 +41,11 @@ export const HealthCardGrid: React.FC<HealthCardGridProps> = ({
   loading = false,
   onDeleteCategory,
   onOpenEditCategory,
+  onRefresh
 }) => {
 
   const userId = localStorage.getItem('user_id');
   const isOwner = userId === owner;
-  console.log('kfja',isOwner)
   const [isLogHistoryModalOpen, setIsLogHistoryModalOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] =
     useState<HealthCategory | null>(null);
@@ -85,13 +86,23 @@ export const HealthCardGrid: React.FC<HealthCardGridProps> = ({
   };
 
   // 3. Hàm xử lý Sửa/Xóa log (Cần tích hợp API/Redux/Context)
-  const handleEditLog = (log_id: string, log: HealthLog) => {
-    updateLog(log_id, log).then(() => {
+  const handleEditLog = async(log_id: string, log: HealthLog, selectedFile?: File) => {
+  try {
+      const payload = { ...log, image: selectedFile };
+      
+      // Sử dụng await để đảm bảo API chạy xong mới làm việc tiếp theo
+      await updateLog(log_id, payload);
+      
+      console.log("Cập nhật thành công");
       setIsLogHistoryModalOpen(false);
-      // TODO: Triển khai hàm onOpenLogModal để nhận logToEdit
-      console.log("Mở form sửa log:", log);
-    });
-  };
+      
+      // QUAN TRỌNG: Gọi hàm này để báo component cha gọi lại API lấy danh sách mới
+      onRefresh(); 
+      
+    } catch (err) {
+      setIsOpenErrorToast(true);
+    }
+};
 
   const handleDeleteLog = () => {
     setIsConfirmDeleteModalOpen(false);
@@ -99,6 +110,7 @@ export const HealthCardGrid: React.FC<HealthCardGridProps> = ({
     if (selectedLogId) {
       deleteLog(selectedLogId).then(() => {
         setSelectedLogId(null);
+        onRefresh()
       });
     }
   };

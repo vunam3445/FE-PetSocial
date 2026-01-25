@@ -27,19 +27,25 @@ export const ListVideoProfile = () => {
     <div id="tab-videos">
       <div className="p-6 bg-white rounded-lg shadow-sm">
         <h2 className="mb-4 text-xl font-semibold text-gray-900">Video đã đăng</h2>
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {media.map((item, index) => {
-            if (index === media.length - 1) {
-              return (
-                <div ref={lastVideoRef} key={item.id}>
-                  <VideoProfile data={item} />
-                </div>
-              );
-            } else {
-              return <VideoProfile key={item.id} data={item} />;
-            }
-          })}
-        </div>
+        {!loading && media.length === 0 ? (
+          <div className="py-10 text-center">
+            <p className="font-medium text-gray-500">Người dùng này chưa đăng video nào.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {media.map((item, index) => {
+              if (index === media.length - 1) {
+                return (
+                  <div ref={lastVideoRef} key={item.media_id || item.id}>
+                    <VideoProfile data={item} />
+                  </div>
+                );
+              } else {
+                return <VideoProfile key={item.media_id || item.id} data={item} />;
+              }
+            })}
+          </div>
+        )}
         {loading && <p className="mt-4 text-gray-500">Đang tải...</p>}
         {error && <p className="mt-4 text-red-500">{error}</p>}
       </div>

@@ -11,6 +11,7 @@ import "./assets/css/login-register.css";
 import { ChatModalsContainer } from "./components/molecules/ChatModalsContainer";
 import { Groups } from "./pages/Groups";
 import { GroupDetail } from "./pages/GroupDetail";
+import { ForgotPasswordPage } from "./pages/ForgotPasswordPage";
 function App() {
   return (
     <ChatProvider>
@@ -25,6 +26,7 @@ function App() {
           <Route path="/groups" element={<Groups/>}/>
           <Route path="/groups/:group_id" element={<GroupDetail />} />
         </Route>
+          <Route path="/forgot-password" element={<ForgotPasswordPage/>} />
       </Routes>
     </Router>
     <ChatModalsContainer />

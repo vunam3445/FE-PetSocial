@@ -18,6 +18,7 @@ import ComfirmDeleteModal from "../components/modals/ComfirmDeleteModal";
 import { useDeleteHealthCategory } from "../hooks/pet/useDeleteHealthCategory";
 import { useUpdateHealthCategory } from "../hooks/pet/useUpdateHealthCategory";
 import { EditCategoryModal } from "../components/PetHealth/EditCategoryModal";
+import ErrorToast from "../components/toasts/ErrorToast";
 import { useAllPostOfPet } from "../hooks/pet/useAllPostOfPet";
 import type { HealthCategory } from "../types/Pet";
 
@@ -27,7 +28,7 @@ export const PetHealth = () => {
   const [coverUpdate, setCoverUpdate] = useState<string>("");
   const [petInfo, setPetInfo] = useState<PetInfo | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
-
+  const [errorToast, setErrorToast] = useState(false);
   const { id } = useParams();
   const { fetchPetInfo } = usePet();
 
@@ -101,16 +102,26 @@ export const PetHealth = () => {
     setCategoryType(categoryType);
     setIsLogModalOpen(true);
   };
-  const handleSaveLog = async (data: any) => {
-    try {
-      data.pet_id = id;
-      data.category_id = currentCategoryId;
-      await createPetLog(data);
-      refetch();
-    } catch (error) {
-      console.error("Error creating log:", error);
-    }
-  };
+const handleSaveLog = async (data: any) => {
+  try {
+    // 1. Chuẩn bị dữ liệu bổ sung
+    data.pet_id = id;
+    data.category_id = currentCategoryId;
+
+    // 2. Gọi API thông qua hook
+    await createPetLog(data);
+
+    // 3. Nếu thành công:
+    setIsLogModalOpen(false); // Đóng modal
+    refetch(); // Làm mới dữ liệu
+    
+    // Bạn có thể thêm alert/toast ở đây
+    console.log("Tạo log thành công!");
+  } catch (error) {
+      setErrorToast(true);
+      console.log(error);
+  }
+};
 
   const handleCreateCategory = async (data: any) => {
     try {
@@ -203,6 +214,7 @@ export const PetHealth = () => {
                         );
                         setCurrentCategoryData(categoryData);
                       }}
+                      onRefresh={refetch}
                     />
                   )}
                 </div>
@@ -235,6 +247,11 @@ export const PetHealth = () => {
         onClose={() => setIsEditCategoryModalOpen(false)}
         onUpdateCategory={handleUpdateCategory}
         initialData={currentCategoryData}
+      />
+      <ErrorToast
+        open={errorToast}
+        onClose={()=>{setErrorToast(false)}}
+        text={createPetLogError}
       />
     </div>
   );

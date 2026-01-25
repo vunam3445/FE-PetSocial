@@ -115,7 +115,7 @@ export const ChatModal = ({
             is_group: newRaw.is_group,
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString(),
-            created_by: newRaw.create_by,
+            my_role: newRaw.my_role,
             participants: [],
             avatar_url: newRaw.avatar_url,
           },
@@ -242,7 +242,7 @@ export const ChatModal = ({
                                   ? conv.name
                                   : otherParticipant?.name || "Unknown",
                                 is_group: conv.is_group,
-                                created_by: conv.created_by,
+                                my_role: conv.my_role,
                               });
                             }}
                             onDelete={handleDelete}

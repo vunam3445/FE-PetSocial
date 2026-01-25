@@ -31,6 +31,7 @@ const HomePostContainer = ({ newPost }: HomePostContainerProps) => {
       observer.current = new IntersectionObserver((entries) => {
         if (entries[0].isIntersecting && hasMore) {
           setPage((prev) => prev + 1);
+          console.log('page', hasMore);
         }
       });
 
@@ -49,6 +50,16 @@ const HomePostContainer = ({ newPost }: HomePostContainerProps) => {
         onDelete={handleDelete}
         onShare={handleShare}
         lastPostRef={lastPostRef}
+        isLoading={loading}
+        onCommentAdded={(postId) => {
+            setPosts((prevPosts) =>
+              prevPosts.map((p) =>
+                p.post_id === postId
+                  ? { ...p, comments_count: (p.comments_count || 0) + 1 }
+                  : p,
+              ),
+            );
+          }}
       />
 
       {loading && (

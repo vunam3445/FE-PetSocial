@@ -17,7 +17,14 @@ export interface NewPostOfPetData {
     target_url: string;
 }
 
-
+export interface ConversationDeletedData {
+    type: 'conversation_deleted';
+    conversation_id: string;
+    conversation_name: string;
+    avatar_url: string | null;  // Ảnh đại diện của hội thoại bị xóa
+    message: string;            // Nội dung thông báo (VD: "đã giải tán nhóm...")
+    created_at: string;
+}
 
 
 // Interface cho dữ liệu bên trong của thông báo "Vào nhóm thành công"
@@ -53,6 +60,10 @@ export interface GroupRejected {
 // 2. Gộp lại thành một Union Type để TypeScript có thể gợi ý (IntelliSense)
 export type NotificationData = NewPostData | GroupRejected | PostDeletedViolation | NewPostOfPetData | GroupJoined | GroupKicked | ConversationInvitationData | ConversationKickedData
     | HealthReminderData
+    | ConversationDeletedData
+    | GroupJoinRequestData
+    | PostPendingAggregatedData
+    | PostReportedAggregatedData
 ;
 
 export interface NotificationItem {
@@ -118,4 +129,54 @@ export interface HealthReminderData {
     message: string;            // Nội dung thông báo đầy đủ
     created_at: string;
     status: 'unread' | 'read';
+}
+
+// 1. Định nghĩa Interface chi tiết cho câu hỏi và câu trả lời
+export interface GroupJoinQuestionAnswer {
+    question_id: number;
+    question: string;
+    answer: string;
+}
+
+// 2. Định nghĩa Interface cho dữ liệu Join Request (Dành cho Admin)
+export interface GroupJoinRequestData {
+    type: 'GROUP_JOIN_REQUEST';
+    message: string;
+    group_id: string;
+    group_name: string;
+    avatar_url: string; // Ảnh của người gửi yêu cầu (để hiển thị ở list noti)
+    created_at: string;
+    target_url: string;
+    status: 'pending' | 'accepted' | 'rejected';
+    data: {
+        request_id: number;
+        user_id: string;
+        name: string;
+        avatar_url: string; // Ảnh người dùng
+        status: string;
+        questions: GroupJoinQuestionAnswer[];
+        created_at: string;
+    };
+}
+
+export interface PostPendingAggregatedData {
+    type: 'POST_PENDING_AGGREGATED';
+    group_id: string;
+    group_name: string;
+    pending_count: number; // Số lượng bài viết đang chờ duyệt
+    message: string;       // VD: "Có 5 bài viết mới đang chờ duyệt..."
+    avatar_url: string;    // Thường lấy avatar của Group
+    target_url: string;    // Dẫn đến trang quản lý bài viết của Group
+    created_at: string;
+}
+export interface PostReportedAggregatedData {
+    type: 'POST_REPORTED_AGGREGATED';
+    post_id: string;
+    group_id: string;
+    group_name: string;
+    report_count: number;
+    message: string;
+    avatar_url: string;
+    target_url: string;
+    created_at: string;
 }

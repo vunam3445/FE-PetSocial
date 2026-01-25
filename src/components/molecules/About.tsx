@@ -2,8 +2,8 @@ import { useParams } from "react-router-dom";
 import useUserId from "../../hooks/auth/useUserId";
 import EditBioModal from "../modals/EditBioModal";
 import { useState } from "react";
-export const About = ({ bio }: { bio: string }) => {
-  const [bioUser, setBioUser] = useState<string>(bio);
+export const About = ({ bio, setBio}: { bio: string, setBio:React.Dispatch<React.SetStateAction<string>> }) => {
+  
   const [openModal, setOpenModal] = useState(false);
   const {id}= useParams();
   const isOwner = useUserId(id);
@@ -24,15 +24,15 @@ export const About = ({ bio }: { bio: string }) => {
        
       </div>
       <div className="text-sm text-gray-700 break-words">
-        <p>{bioUser}</p>
+        <p>{bio}</p>
       </div>
 
       {openModal && (
         <EditBioModal
           open={openModal}
           onClose={() => setOpenModal(false)}
-          currentBio={bioUser}
-          onSave={(newBio: string) => setBioUser(newBio)}
+          currentBio={bio}
+          onSave={(newBio: string) => setBio(newBio)}
         />
       )}
     </div>
