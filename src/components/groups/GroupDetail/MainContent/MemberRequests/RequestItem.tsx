@@ -5,7 +5,7 @@ import type { JoinRequest } from "../../../../../types/QuestionAndAnswer"; // Ad
 interface RequestItemProps {
   request: JoinRequest;
   isExpanded: boolean;
-  onToggleExpand: (id: string) => void;
+  onToggleExpand: (id: number) => void;
   onApprove: (r: JoinRequest) => void;
   onDecline: (r: JoinRequest) => void;
 }
@@ -31,7 +31,7 @@ export const RequestItem = ({
   return (
     <div className={`group transition-colors duration-200 ${isExpanded ? 'bg-blue-50/50' : 'hover:bg-gray-50'}`}>
       {/* Phần thông tin chính */}
-      <div className="p-4 cursor-pointer" onClick={() => onToggleExpand(request.id)}>
+      <div className="p-4 cursor-pointer" onClick={() => onToggleExpand(request.request_id)}>
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
             <img

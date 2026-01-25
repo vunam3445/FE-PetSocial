@@ -13,6 +13,7 @@ interface HealthDashboardTabProps {
   loading?: boolean;
   onDeleteCategory: (categoryId: string) => void;
   onOpenEditCategory?: (categoryId: string) => void;
+  onRefresh:()=>void;
 }
 
 export const HealthDashboardTab: React.FC<HealthDashboardTabProps> = ({
@@ -24,6 +25,7 @@ export const HealthDashboardTab: React.FC<HealthDashboardTabProps> = ({
   loading,
   onDeleteCategory,
   onOpenEditCategory,
+  onRefresh
 }) => {
   const { categories } = usePetHealthCategories(species);
   return (
@@ -37,6 +39,7 @@ export const HealthDashboardTab: React.FC<HealthDashboardTabProps> = ({
         healthData ={healthData}
         onDeleteCategory={onDeleteCategory}
         onOpenEditCategory={onOpenEditCategory}
+        onRefresh={onRefresh}
       />
     </div>
   );

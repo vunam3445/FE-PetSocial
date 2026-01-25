@@ -1,25 +1,33 @@
-import { updateReport } from "../../services/ReportService";
+import { updateReportStatus } from "../../services/ReportService";
 import { useState } from "react";
 
-export const useUpdateReport = ()=>{
+export const useUpdateReport = () => {
     const [loading, setLoading] = useState(false);
-    const [error, setError]= useState(false);
+    const [error, setError] = useState(false);
 
-    const changeStatus = async (reportId: string,status: string)=>{
+    /**
+     * @param reportIds: Mảng các ID báo cáo cần cập nhật status (VD: ['id1', 'id2'])
+     * @param status: Trạng thái mới ('resolved' | 'dismissed')
+     */
+    const changeStatus = async (reportIds: string[], status: string) => {
         setLoading(true);
         setError(false);
-        try{
-            const data = {status: status};
-            const res = await updateReport(reportId,data);
-            if(res.status ===200){
+        try {
+            // Gọi hàm service mới nhận vào mảng IDs
+            const res = await updateReportStatus(reportIds, status);
+            
+            // Thông thường Axios trả về 200 hoặc 204 cho cập nhật thành công
+            if (res.status === 200 || res.status === 204) {
                 return res.data;
             }
-        }catch(e: unknown){
-            console.log(e);
+        } catch (e: unknown) {
+            console.error("Update status error:", e);
             setError(true);
-        }finally{
+            return null;
+        } finally {
             setLoading(false);
         }
-    }
-    return {loading, error, setError, changeStatus};
+    };
+
+    return { loading, error, setError, changeStatus };
 }

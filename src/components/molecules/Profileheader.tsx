@@ -13,11 +13,13 @@ export const Profileheader = ({
   followers,
   following,
   isFollowing,
+  date_of_birth,
 }: {
   name: string;
   followers: number;
   following: number;
   isFollowing: boolean;
+  date_of_birth: string;
 }) => {
   const [openModal, setOpenModal] = useState(false);
   const [nameUser, setNameUser] = useState<string>(name);
@@ -63,32 +65,39 @@ export const Profileheader = ({
     }
   };
   const handleMessage = async () => {
-  if (!id) return;
-  try {
-    const res = await createConversation({ participant_ids: [id] });
-    const conv = res.data;
+    if (!id) return;
+    try {
+      const res = await createConversation({ participant_ids: [id] });
+      const conv = res.data;
 
-    if (conv) {
-      const currentUserId = localStorage.getItem("user_id");
-      const other = conv.participants.find(
-        (p: any) => p.user_id !== currentUserId
-      );
+      if (conv) {
+        const currentUserId = localStorage.getItem("user_id");
+        const other = conv.participants.find(
+          (p: any) => p.user_id !== currentUserId
+        );
 
-      const newConv = {
-        id: conv.conversation_id,
-        title: conv.name || other?.name || "Cuộc trò chuyện",
-        avatarUrl: other?.avatar_url || "/default-avatar.png",
-      };
+        const newConv = {
+          id: conv.conversation_id,
+          title: conv.name || other?.name || "Cuộc trò chuyện",
+          avatarUrl: other?.avatar_url || "/default-avatar.png",
+        };
 
-      console.log("Mở modal với:", newConv);
-      openConversation(newConv);
+        console.log("Mở modal với:", newConv);
+        openConversation(newConv);
+      }
+    } catch (error) {
+      console.error("Failed to create or get conversation:", error);
     }
-  } catch (error) {
-    console.error("Failed to create or get conversation:", error);
-  }
-};
-
-
+  };
+const formatDate = (dateStr: string) => {
+    if (!dateStr) return "Chưa cập nhật";
+    const date = new Date(dateStr);
+    return date.toLocaleDateString("vi-VN", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    });
+  };
   return (
     <div className="px-6 pt-20 pb-4 bg-white rounded-b-lg shadow-sm md:px-8">
       <div className="flex flex-col md:flex-row md:items-end md:justify-between">
@@ -106,13 +115,18 @@ export const Profileheader = ({
             )}
           </div>
           <div className="flex items-center mt-2 space-x-4 text-sm text-gray-500">
-            <span>
+            {/* Ngày sinh */}
+            <div className="flex items-center">
+              <i className="mr-2 text-blue-500 fas fa-birthday-cake"></i>
+              <span>Sinh ngày {formatDate(date_of_birth)}</span>
+            </div>
+            <span className="flex items-center">
               <i className="mr-1 fas fa-user-friends"></i>
-              {followers} followers
+              <strong>{followers}</strong>&nbsp;Người theo dõi
             </span>
-            <span>
+            <span className="flex items-center">
               <i className="mr-1 fas fa-user-check"></i>
-              {following} following
+              Đang theo dõi&nbsp;<strong>{following}</strong>&nbsp;người
             </span>
           </div>
         </div>

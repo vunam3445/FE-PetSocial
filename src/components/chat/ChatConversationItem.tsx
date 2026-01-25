@@ -80,8 +80,7 @@ export const ChatConversationItem = ({
               {displayName}
             </p>
             
-            <div className="flex items-center">
-              {/* Nút 3 chấm - Hiển thị khi hover vào item HOẶC khi menu đang mở */}
+            {/* <div className="flex items-center">
               <div className="relative" ref={menuRef}>
                 <button
                   onClick={(e) => {
@@ -96,7 +95,7 @@ export const ChatConversationItem = ({
                   </svg>
                 </button>
 
-                {/* Dropdown Menu */}
+           
                 {showMenu && (
                   <div className="absolute right-0 z-50 w-32 mt-2 overflow-hidden bg-white border border-gray-200 rounded-lg shadow-xl">
                     <button
@@ -112,11 +111,10 @@ export const ChatConversationItem = ({
                 )}
               </div>
 
-              {/* Chấm xanh thông báo - Ẩn khi nút 3 chấm hiện (tùy chọn UI) */}
               {isUnread && !showMenu && (
                 <div className="w-2.5 h-2.5 bg-blue-500 rounded-full border-2 border-white ml-2 group-hover:hidden"></div>
               )}
-            </div>
+            </div> */}
           </div>
 
           {!isGroup && (

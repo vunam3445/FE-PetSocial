@@ -8,14 +8,19 @@ import ErrorToast from "../toasts/ErrorToast";
 export const PostsOfGroupContainer = ({
   groupId,
   newPost,
+  isInGroupPage = false,
 }: {
   groupId: string;
   newPost: Post;
+  isInGroupPage?: boolean;
 }) => {
   const [page, setPage] = useState(1);
   const { loading, error, setError, hasMore, posts, setPosts } =
     useGetPostsOfGroup(page, groupId);
-  const { handleUpdate, handleDelete, handleShare } = usePostActions(posts);
+  const { handleUpdate, handleDelete, handleShare } = usePostActions(
+    setPosts,
+    isInGroupPage,
+  );
   const observer = useRef<IntersectionObserver | null>(null);
   const lastPostRef = useCallback(
     (node: HTMLDivElement | null) => {
@@ -30,16 +35,25 @@ export const PostsOfGroupContainer = ({
 
       if (node) observer.current.observe(node);
     },
-    [loading, hasMore]
+    [loading, hasMore],
   );
 
   useEffect(() => {
     if (!newPost) return;
 
-    // Chỉ ghép bài mới vào khi page=1
-    setPosts((prev) => [newPost, ...prev]);
-  }, [newPost]);
+    // Nếu là bài viết được chia sẻ (có shared_post_id)
+    // VÀ đang ở trang Group Detail thì KHÔNG thêm vào đầu danh sách.
+    const isSharedPost = !!newPost.shared_post_id;
+    if (isInGroupPage && isSharedPost) {
+      return;
+    }
 
+    // Nếu là bài viết bình thường hoặc ở ngữ cảnh khác thì vẫn thêm vào đầu
+    setPosts((prev) => {
+      if (prev.find((p) => p.post_id === newPost.post_id)) return prev;
+      return [newPost, ...prev];
+    });
+  }, [newPost, isInGroupPage]);
   useEffect(() => {
     setPage(1);
   }, [groupId]);
@@ -53,18 +67,32 @@ export const PostsOfGroupContainer = ({
           ))}
         </div>
       )}
-      {posts.length>0 && (
+      {posts.length > 0 && (
         <ListPost
-        onDelete={handleDelete}
-        onShare={handleShare}
-        onUpdate={handleUpdate}
-        posts={posts}
-        lastPostRef={lastPostRef}
-        onCommentAdded={() => {}}
-      />
+          onDelete={handleDelete}
+          onShare={handleShare}
+          onUpdate={handleUpdate}
+          posts={posts}
+          lastPostRef={lastPostRef}
+          onCommentAdded={(postId) => {
+            setPosts((prevPosts) =>
+              prevPosts.map((p) =>
+                p.post_id === postId
+                  ? { ...p, comments_count: (p.comments_count || 0) + 1 }
+                  : p,
+              ),
+            );
+          }}
+        />
       )}
 
-      <ErrorToast open={error} text = {'Có lỗi xảy ra khi tải bài viết, vui lognf thử lại sau'} onClose={()=>{setError(false)}}/>
+      <ErrorToast
+        open={error}
+        text={"Có lỗi xảy ra khi tải bài viết, vui lognf thử lại sau"}
+        onClose={() => {
+          setError(false);
+        }}
+      />
     </>
   );
 };

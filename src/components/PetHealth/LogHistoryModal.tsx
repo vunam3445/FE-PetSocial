@@ -9,7 +9,7 @@ interface LogHistoryModalProps {
   onClose: () => void;
   category: HealthCategory | null; 
   onDeleteLog: (logId: string) => void; 
-  onUpdateLog: (log_id: string, log: HealthLog) => void; // Hàm mới để lưu log đã sửa
+  onUpdateLog: (log_id: string, log: HealthLog, selectedFile?: File) => void; // Hàm mới để lưu log đã sửa
 }
 
 export const LogHistoryModal: React.FC<LogHistoryModalProps> = ({ 
@@ -34,8 +34,8 @@ export const LogHistoryModal: React.FC<LogHistoryModalProps> = ({
   };
   
   // 4. Hàm lưu log đã sửa
-  const handleSaveEdit = (updatedLog: HealthLog) => {
-    onUpdateLog(updatedLog.log_id, updatedLog); // Gọi hàm update từ prop
+  const handleSaveEdit = (updatedLog: HealthLog,selectedFile?: File) => {
+    onUpdateLog(updatedLog.log_id, updatedLog,selectedFile); // Gọi hàm update từ prop
     setEditingLog(null); // Quay lại danh sách
   };
 
@@ -100,8 +100,13 @@ export const LogHistoryModal: React.FC<LogHistoryModalProps> = ({
                 <p className="py-4 text-center text-gray-500">Không có log nào được ghi nhận.</p>
               ) : (
                 sortedLogs.map((log) => (
-                  <div key={log.log_id} className="flex items-center justify-between p-3 transition duration-150 border border-blue-100 rounded-xl bg-blue-50/70 hover:bg-blue-100/70">
-                    <div className="min-w-0 pr-2">
+                 <div key={log.log_id} className="flex items-center justify-between p-3 transition duration-150 border border-blue-100 rounded-xl bg-blue-50/70 hover:bg-blue-100/70">
+                  <div className="flex items-center min-w-0 pr-2 space-x-3">
+                      {log.image_url && (
+                      <div className="flex-shrink-0 w-12 h-12 overflow-hidden bg-gray-200 border border-blue-200 rounded-lg">
+                        <img src={log.image_url} alt="" className="object-cover w-full h-full" />
+                      </div>
+                    )}
                       <p className="font-medium text-gray-800">
                         {log.value} {category.unit || ''} 
                         <span className="ml-2 text-sm font-normal text-gray-500">({new Date(log.recorded_at).toLocaleDateString()})</span>

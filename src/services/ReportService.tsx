@@ -6,16 +6,22 @@ export const createReport = async(data: any)=>{
     return res;
 }
 
-export const updateReport = async(reportId: string,data: any)=>{
-    const url = `/reports/${reportId}`;
-    const res = api.put(url, data);
-    return res;
-}   
+export const updateReportStatus = async (reportIds: string[], status: string) => {
+    const url = `/reports/update-status`; // Tạo route mới để xử lý hàng loạt
+    return await api.put(url, { 
+        report_ids: reportIds, 
+        status: status 
+    });
+}
 
-export const deleteReport = async(reportId: string) =>{
-    const url = `/reports/${reportId}`;
-    const res = api.delete(url);
-    return res;
+export const deleteReportsBulk = async (reportIds: string[]) => {
+    const url = `/reports/bulk-delete`;
+    
+    return await api.delete(url, { 
+        data: { 
+            report_ids: reportIds 
+        } 
+    } as any); // Ép kiểu để TypeScript không bắt bẻ trường 'data'
 }
 
 export const getReportOfGroup= async(groupId: string,page: number)=>{

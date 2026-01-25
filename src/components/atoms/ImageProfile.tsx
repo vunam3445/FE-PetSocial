@@ -1,6 +1,6 @@
-export const ImageProfile = ({ url }:{url:string}) => {
+export const ImageProfile = ({ url, handleImage }:{url:string,handleImage:(url: string)=>void}) => {
   return (
-    <div className="overflow-hidden rounded-lg cursor-pointer aspect-square bg-gradient-to-br from-pink-300 to-rose-400 image-hover">
+    <div className="overflow-hidden rounded-lg cursor-pointer aspect-square bg-gradient-to-br from-pink-300 to-rose-400 image-hover" onClick={()=>{handleImage(url)}}>
       {url ? (
         <img
           src={url}

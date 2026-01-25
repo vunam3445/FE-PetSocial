@@ -4,7 +4,8 @@ import { MemberSkeleton } from "../skeleton/MemberSkeleton";
 import useDeleteMemberOfConversation from "../../hooks/chat/useDeleteMemberOfConversation";
 import { type Member } from "../../types/Conversation";
 import ConfirmDelete from "./ComfirmDeleteModal";
-
+import SuccessToast from "../toasts/SuccessToast";
+import useChangeRoleConversation from "../../hooks/chat/useChangeRoleConversation";
 interface MemberModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -28,15 +29,20 @@ export const ConversationMemberModal: React.FC<MemberModalProps> = ({
 
   const { deleteMember, isLoading: isDeleting } =
     useDeleteMemberOfConversation();
-
+  const { changeRole, loading: isChangingRole } = useChangeRoleConversation();
   const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
   const userId = localStorage.getItem("user_id");
-  // --- State cho Modal xác nhận xóa ---
+  const [successToast, setOpenSuccessToats] = useState(false);
+  const isAdmin = React.useMemo(
+    () => members.some((m) => m.user_id === userId && m.pivot.role === "admin"),
+    [members, userId]
+  );
   const [confirmModal, setConfirmModal] = useState<{
     show: boolean;
     userId: string;
-    userName: string;
-  }>({ show: false, userId: "", userName: "" });
+    text: string;
+    type: "delete" | "promote"; // Phân biệt loại hành động
+  }>({ show: false, userId: "", text: "", type: "delete" });
 
   useEffect(() => {
     if (isOpen) {
@@ -59,34 +65,52 @@ export const ConversationMemberModal: React.FC<MemberModalProps> = ({
 
   if (!isOpen) return null;
 
-  // Mở modal xác nhận thay vì dùng window.confirm
-  const handleOpenConfirm = (userId: string, userName: string) => {
-    setConfirmModal({ show: true, userId, userName });
-    setOpenDropdownId(null); // Đóng dropdown khi mở modal
+  // Hàm mở modal xác nhận xóa
+  const handleOpenConfirm = (userId: string, text: string) => {
+    setConfirmModal({ show: true, userId, text, type: "delete" });
+    setOpenDropdownId(null);
   };
 
-  // Hàm thực thi xóa khi nhấn "Có" trên Modal
-  const handleConfirmDelete = async () => {
-    const { userId } = confirmModal;
-
+  // Hàm mở modal xác nhận chuyển quyền
+  const handleOpenChangeRoleConfirm = (targetId: string, text: string) => {
+    setConfirmModal({ show: true, userId: targetId, text, type: "promote" });
+    setOpenDropdownId(null);
+  };
+  // Hàm xử lý khi nhấn "Có" trên Modal xác nhận
+  const handleFinalConfirm = async () => {
+    const { userId: targetId, type } = confirmModal;
     setConfirmModal((prev) => ({ ...prev, show: false }));
 
-    const result = await deleteMember(conversationId, userId);
-
-    if (result.success) {
-      // SỬA TẠI ĐÂY: Sử dụng functional update để chắc chắn UI render lại
-      setMembers((prevMembers) => {
-        const newMembers = prevMembers.filter((m) => m.user_id !== userId);
-        return [...newMembers]; // Tạo mảng mới để trigger re-render
-      });
-
-      // Reset dropdown để tránh lỗi giao diện
-      setOpenDropdownId(null);
+    if (type === "delete") {
+      // Logic xóa thành viên cũ của bạn
+      const result = await deleteMember(conversationId, targetId);
+      if (result.success) {
+        setMembers((prev) => prev.filter((m) => m.user_id !== targetId));
+      }
     } else {
-      console.error(result.error);
+      // Logic CHUYỂN QUYỀN dùng Hook mới
+      const result = await changeRole(conversationId, targetId);
+      if (result.success) {
+        // Cập nhật UI cục bộ: Người cũ thành member, người mới thành admin
+        setOpenSuccessToats(true);
+        setMembers((prevMembers) =>
+          prevMembers.map((m) => {
+            // 1. Chuyển người nhận thành Admin
+            if (String(m.user_id) === String(targetId)) {
+              return { ...m, pivot: { ...m.pivot, role: "admin" } };
+            }
+            // 2. Chuyển CHÍNH MÌNH (Admin cũ) thành Member
+            // Lưu ý: userId ở đây là ID của bạn lấy từ localStorage
+            if (String(m.user_id) === String(userId)) {
+              return { ...m, pivot: { ...m.pivot, role: "member" } };
+            }
+            return m;
+          })
+        );
+        onClose();
+      }
     }
   };
-
   return (
     <>
       <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200">
@@ -198,15 +222,32 @@ export const ConversationMemberModal: React.FC<MemberModalProps> = ({
                             👤 Xem hồ sơ
                           </button>
                           <div className="my-1 border-t border-gray-50"></div>
-                          {userId === created_by &&
-                            member.user_id !== created_by && (
+                          {
+                            member.pivot.role != "admin" && (
                               <>
+                                <div className="my-1 border-t border-gray-100"></div>
+
+                                {/* Option 2: Chuyển quyền quản lý (Nhường ngôi) */}
+                                <button
+                                  onClick={() => {
+                                    // Bạn nên tạo một hàm Confirm riêng cho việc chuyển quyền
+                                    // Ví dụ: handleOpenPromoteConfirm(member.user_id, member.name)
+                                    handleOpenChangeRoleConfirm(
+                                      member.user_id,
+                                      "Bạn có chắc chắn muốn chuyển quyền quản lý không?"
+                                    );
+                                  }}
+                                  className="flex items-center w-full px-4 py-3 text-sm font-medium text-blue-600 transition-colors hover:bg-blue-50"
+                                >
+                                  <span className="mr-2">👑</span> Chuyển quyền
+                                  quản lý
+                                </button>
                                 <div className="my-1 border-t border-gray-50"></div>
                                 <button
                                   onClick={() =>
                                     handleOpenConfirm(
                                       member.user_id,
-                                      member.name
+                                      "Bạn có chắc chắn muốn xóa người này không?"
                                     )
                                   }
                                   className="flex items-center w-full px-4 py-3 text-sm font-bold text-red-600 hover:bg-red-50"
@@ -240,7 +281,15 @@ export const ConversationMemberModal: React.FC<MemberModalProps> = ({
       <ConfirmDelete
         open={confirmModal.show}
         onClose={() => setConfirmModal({ ...confirmModal, show: false })}
-        onConfirm={handleConfirmDelete}
+        onConfirm={handleFinalConfirm}
+        text={confirmModal.text}
+      />
+      <SuccessToast
+        open={successToast}
+        onClose={() => {
+          setOpenSuccessToats(false);
+        }}
+        text="Bạn đã chuyển quyền thành công"
       />
     </>
   );

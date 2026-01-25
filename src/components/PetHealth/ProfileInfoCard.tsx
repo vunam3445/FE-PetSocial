@@ -5,23 +5,33 @@ import { jwtDecode } from "jwt-decode";
 import { useFollowPet } from "../../hooks/pet/useFollowPet";
 import { useUnFollowPet } from "../../hooks/pet/useUnFollowPet";
 import ErrorToast from "../toasts/ErrorToast";
+
 interface TokenPayload {
-  sub: string; // hoặc number tùy API trả về
-  // có thể thêm các trường khác nếu cần
+  sub: string;
 }
 
 export const ProfileInfoCard: React.FC<{ pet: PetInfo }> = ({ pet }) => {
-  const token = localStorage.getItem("access_token"); // hoặc lấy từ cookie
-  const decoded = jwtDecode<TokenPayload>(token);
+  const token = localStorage.getItem("access_token");
+  const decoded = jwtDecode<TokenPayload>(token || "");
   const isMyPet = decoded.sub === pet.user_id;
+
   const [isFollowing, setIsFollowing] = useState<boolean>(pet.is_following);
   const [followCount, setFollowCount] = useState<number>(pet.followers_count);
+
   const { follow, loading: followLoading, error: followError } = useFollowPet();
   const {
     unfollow,
     loading: unfollowLoading,
     error: unfollowError,
   } = useUnFollowPet();
+
+  // Hàm định dạng ngày tháng: 2025-11-30 -> 30/11/2025
+  const formatDate = (dateString: string | undefined) => {
+    if (!dateString) return "Chưa cập nhật";
+    const date = new Date(dateString);
+    return date.toLocaleDateString("vi-VN");
+  };
+
   const handleFollowClick = async () => {
     if (isFollowing) {
       await unfollow(pet.pet_id);
@@ -33,6 +43,7 @@ export const ProfileInfoCard: React.FC<{ pet: PetInfo }> = ({ pet }) => {
       setFollowCount(followCount + 1);
     }
   };
+
   return (
     <div className="p-8 bg-white shadow-xl rounded-2xl">
       <img
@@ -45,49 +56,54 @@ export const ProfileInfoCard: React.FC<{ pet: PetInfo }> = ({ pet }) => {
         <p className="mt-1 text-lg text-gray-600">
           Giống loài: {pet.breed ? pet.breed : pet.type}
         </p>
+
+        {/* Dòng hiển thị ngày sinh mới thêm vào */}
+        <p className="mt-1 text-sm italic text-gray-500">
+          Ngày sinh: {formatDate(pet.birthday)}
+        </p>
       </div>
 
       {!isMyPet && (
         <div className="flex justify-center gap-3 mt-5">
-          <button className="px-5 py-2 font-semibold text-gray-800 transition duration-300 bg-white rounded-lg shadow-md hover:bg-gray-100">
+          <button className="px-5 py-2 font-semibold text-gray-800 transition duration-300 bg-white border rounded-lg shadow-md hover:bg-gray-100">
             Nhắn tin
           </button>
-          {isFollowing ? (
-            <button
-              className={`px-5 py-2 font-semibold text-white transition duration-300 bg-indigo-600 rounded-lg shadow-md hover:bg-indigo-700  ${
-                unfollowLoading ? "opacity-50 cursor-not-allowed" : ""
-              }`}
-              onClick={handleFollowClick}
-              disabled={unfollowLoading}
-            >
-              Hủy theo dõi
-            </button>
-          ) : (
-            <button
-              className={`px-5 py-2 font-semibold text-white transition duration-300 bg-indigo-600 rounded-lg shadow-md hover:bg-indigo-700  ${
-                followLoading ? "opacity-50 cursor-not-allowed" : ""
-              }`}
-              onClick={handleFollowClick}
-              disabled={followLoading}
-            >
-              Theo dõi
-            </button>
-          )}
+          <button
+            className={`px-5 py-2 font-semibold text-white transition duration-300 bg-indigo-600 rounded-lg shadow-md hover:bg-indigo-700 ${
+              followLoading || unfollowLoading
+                ? "opacity-50 cursor-not-allowed"
+                : ""
+            }`}
+            onClick={handleFollowClick}
+            disabled={followLoading || unfollowLoading}
+          >
+            {isFollowing ? "Hủy theo dõi" : "Theo dõi"}
+          </button>
         </div>
       )}
-
-      {/* <p className="mt-6 text-base text-center text-gray-700">{pet.bio}</p> */}
 
       <div className="flex justify-around py-4 mt-6 text-center border-t border-b">
         <div>
           <span className="text-lg font-bold text-gray-800">{followCount}</span>
           <span className="block text-sm text-gray-500">Người theo dõi</span>
         </div>
+        {/* Bạn có thể thêm giới tính ở đây nếu muốn */}
+        <div>
+          <span className="block text-sm text-gray-500">Giới tính</span>
+          <span className="text-lg font-bold text-gray-800">
+            <span className="text-lg font-bold text-gray-800">
+              {pet.gender === "male"
+                ? "Đực"
+                : pet.gender === "female"
+                  ? "Cái"
+                  : "Chưa rõ"}
+            </span>
+          </span>
+        </div>
       </div>
+
       {(followError || unfollowError) && (
-        <ErrorToast
-          message={followError || unfollowError || "Đã có lỗi xảy ra"}
-        />
+        <ErrorToast text={followError || unfollowError || "Đã có lỗi xảy ra"} />
       )}
     </div>
   );

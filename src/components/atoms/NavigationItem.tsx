@@ -5,7 +5,7 @@ interface NavigationItemProps {
   label: string;
   href: string;
   isActive?: boolean;
-  onClick?: () => void;
+  onClick?: (e: React.MouseEvent) => void;
 }
 
 const NavigationItem: React.FC<NavigationItemProps> = ({ 

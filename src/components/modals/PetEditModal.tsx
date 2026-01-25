@@ -29,7 +29,7 @@ interface PetEditModalProps {
     gender: string;
     birthday: string;
   };
-  onUpdated? : ()=>void;
+  onUpdated?: () => void;
 }
 
 export const PetEditModal: React.FC<PetEditModalProps> = ({
@@ -47,11 +47,30 @@ export const PetEditModal: React.FC<PetEditModalProps> = ({
     avatarFile: null as File | null,
     avatarPreview: pet.avatar_url,
   });
-
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const { updatePet, loading, error } = useUpdatePet();
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
+  };
+  const validate = () => {
+    const newErrors: { [key: string]: string } = {};
+
+    if (!form.name.trim()) newErrors.name = "Tên thú cưng không được để trống";
+    if (!form.type.trim()) newErrors.type = "Vui lòng nhập loài (vd: Chó, Mèo)";
+    if (!form.breed.trim()) newErrors.breed = "Vui lòng nhập giống loài";
+    if (!form.birthday) {
+      newErrors.birthday = "Vui lòng chọn ngày sinh";
+    } else {
+      const selectedDate = new Date(form.birthday);
+      const today = new Date();
+      if (selectedDate > today) {
+        newErrors.birthday = "Ngày sinh không thể nằm trong tương lai";
+      }
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0; // Trả về true nếu không có lỗi
   };
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -66,6 +85,7 @@ export const PetEditModal: React.FC<PetEditModalProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!validate()) return;
     const formData = new FormData();
     formData.append("_method", "PUT"); // Thêm dòng này
     formData.append("name", form.name);
@@ -116,11 +136,11 @@ export const PetEditModal: React.FC<PetEditModalProps> = ({
         >
           <Pets sx={{ fontSize: 32 }} />
           <Typography variant="h4" component="div" fontWeight="700">
-            Pet Information
+            Thông tin thú cưng
           </Typography>
         </Box>
         <Typography variant="body1" sx={{ mt: 1, opacity: 0.9 }}>
-          Add or update your pet's details
+          Chỉnh sửa thông tin thú cưng
         </Typography>
       </DialogTitle>
 
@@ -145,7 +165,7 @@ export const PetEditModal: React.FC<PetEditModalProps> = ({
                   color="primary"
                   fontWeight="600"
                 >
-                  Pet Photo
+                  Ảnh thú cưng
                 </Typography>
 
                 {form.avatarPreview ? (
@@ -220,6 +240,8 @@ export const PetEditModal: React.FC<PetEditModalProps> = ({
                     label="Pet Name"
                     variant="outlined"
                     name="name"
+                    error={!!errors.name}
+                    helperText={errors.name}
                     value={form.name}
                     onChange={handleChange}
                     sx={{
@@ -246,6 +268,8 @@ export const PetEditModal: React.FC<PetEditModalProps> = ({
                     label="Pet Type"
                     variant="outlined"
                     name="type"
+                    error={!!errors.type}
+                    helperText={errors.type}
                     value={form.type}
                     onChange={handleChange}
                     placeholder="e.g., Dog, Cat, Bird"
@@ -274,6 +298,8 @@ export const PetEditModal: React.FC<PetEditModalProps> = ({
                     variant="outlined"
                     value={form.breed}
                     name="breed"
+                    error={!!errors.breed}
+                    helperText={errors.breed}
                     onChange={handleChange}
                     placeholder="e.g., Golden Retriever"
                     sx={{
@@ -301,6 +327,8 @@ export const PetEditModal: React.FC<PetEditModalProps> = ({
                     type="date"
                     variant="outlined"
                     name="birthday"
+                    error={!!errors.birthday}
+                    helperText={errors.birthday}
                     value={form.birthday}
                     onChange={handleChange}
                     InputLabelProps={{

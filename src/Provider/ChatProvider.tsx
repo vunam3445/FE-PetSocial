@@ -20,7 +20,7 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const [openConversations, setOpenConversations] = useState<Conversation[]>(
-    []
+    [],
   );
   const { markAsRead } = useReadConversation(); // 1. Khai báo hook
   const [conversations, setConversations] = useState<ConversationItem[]>([]);
@@ -33,7 +33,8 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({
   const [conversationsPage, setConversationsPage] = useState(1);
   const [hasMoreConversations, setHasMoreConversations] = useState(true);
   const [openEditConversation, setOpenEditConversation] = useState(false);
-  const [editingConversation, setEditingConversation] = useState<EditingConversation | null>(null);
+  const [editingConversation, setEditingConversation] =
+    useState<EditingConversation | null>(null);
   // ✅ giữ socket toàn cục
   const socketRef = useRef<Socket | null>(null);
 
@@ -76,7 +77,23 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({
       console.log("🔥 Nhận thông báo mới:", noti);
 
       // 1. Thêm vào danh sách thông báo (đưa lên đầu)
-      setNotifications((prev) => [noti, ...prev]);
+      setNotifications((prev) => {
+        // 1. Tìm xem thông báo này đã có trong danh sách chưa (dựa vào UUID của Laravel)
+        const existingIndex = prev.findIndex((item) => item.id === noti.id);
+
+        if (existingIndex !== -1) {
+          // 2. Nếu đã tồn tại (Trường hợp gộp/Aggregated):
+          // Cập nhật dữ liệu mới (count mới, message mới) vào đúng vị trí cũ
+          const updatedNotifications = [...prev];
+          updatedNotifications[existingIndex] = noti;
+
+          // Không tăng số lượng unread tổng nếu chỉ là cập nhật trên thông báo cũ chưa đọc
+          return updatedNotifications;
+        }
+
+        // 3. Nếu chưa có: Thêm mới vào đầu danh sách
+        return [noti, ...prev];
+      });
 
       // 2. Tăng số lượng chưa đọc
       setUnreadNotificationsCount((prev) => prev + 1);
@@ -92,7 +109,7 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({
 
   // 👉 khi mở 1 conversation thì join room đó
   const openConversation: ChatContextType["openConversation"] = async (
-    conv
+    conv,
   ) => {
     setOpenConversations((prev) => {
       if (prev.find((c) => c.id === conv.id)) return prev;
@@ -117,7 +134,7 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({
       const msgs = prev[conversationId] || [];
       const updated = msgs.some((m) => m.message_id === message.message_id)
         ? msgs.map((m) =>
-            m.message_id === message.message_id ? { ...m, ...message } : m
+            m.message_id === message.message_id ? { ...m, ...message } : m,
           )
         : [...msgs, message];
       return { ...prev, [conversationId]: updated };
@@ -128,12 +145,12 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({
   const updateMessage = (
     conversationId: string,
     tempId: string,
-    newData: Message
+    newData: Message,
   ) => {
     setMessages((prev) => {
       const msgs = prev[conversationId] || [];
       const updated = msgs.map((m) =>
-        m.message_id === tempId ? { ...m, ...newData } : m
+        m.message_id === tempId ? { ...m, ...newData } : m,
       );
       return { ...prev, [conversationId]: updated };
     });
@@ -181,7 +198,7 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({
         return [];
       }
     },
-    [userId]
+    [userId],
   );
 
   const fetchConversations = useCallback(
@@ -208,7 +225,7 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({
         setIsFetching(false);
       }
     },
-    [userId]
+    [userId],
   );
 
   return (
@@ -234,7 +251,7 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({
         editingConversation,
         setEditingConversation,
         openEditConversation,
-        setOpenEditConversation
+        setOpenEditConversation,
       }}
     >
       {children}

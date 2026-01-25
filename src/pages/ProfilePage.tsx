@@ -27,7 +27,12 @@ export const ProfilePage = () => {
   const [avatarUpdate, setAvatarUpdate] = useState<string>("");
   const [newPost, setNewPost] = useState<Post>();
   const [coverUpdate, setCoverUpdate] = useState<string>("");
-
+  const [bio, setBio] = useState<string>("");
+  useEffect(() => {
+    if (user?.bio) {
+      setBio(user.bio);
+    }
+  }, [user?.bio]);
   useEffect(() => {
     if (user) {
       setCoverUpdate(user.cover_url); // đồng bộ khi load user
@@ -57,14 +62,16 @@ export const ProfilePage = () => {
           followers={user.follower_count}
           following={user.following_count}
           isFollowing={user.is_following}
+          date_of_birth={user.date_of_birth}
         />
         <NavTabs activeTab={activeTab} onTabChange={setActiveTab} />
         {activeTab === "Bài viết" && (
           <div className="grid grid-cols-1 gap-6 mt-6 lg:grid-cols-3">
             <ProfileLeftSidebar
-              bio={user.bio}
+              bio={bio}
+              setBio={setBio}
               pets={pets}
-              onViewAllPet={() => setActiveTab("Pets")}
+              onViewAllPet={() => setActiveTab("Thú cưng")}
             />
             <div className="space-y-6 lg:col-span-2">
               {isOwner && (

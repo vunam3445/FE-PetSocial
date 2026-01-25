@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import type { GroupWithMemberRole } from "../../../../../types/Group";
-
+import { Link } from "react-router-dom";
 import { useGetMembersOfGroup } from "../../../../../hooks/group/useGetMembersOfGroup";
 import { useSearchUsersOfGroup } from "../../../../../hooks/search/useSearchUsersOfGroup";
 import { useDeleteGroupMember } from "../../../../../hooks/groupMember/useDeleteGroupMember";
@@ -18,9 +18,7 @@ interface GroupMembersProps {
 export const GroupMembers: React.FC<GroupMembersProps> = ({ groupInfo }) => {
   const groupId = groupInfo?.group.group_id;
 
-  /* =========================
-   * SEARCH STATE
-   * ========================= */
+
   const [inputValue, setInputValue] = useState("");
 
   const {
@@ -34,9 +32,7 @@ export const GroupMembers: React.FC<GroupMembersProps> = ({ groupInfo }) => {
     error: searchError,
   } = useSearchUsersOfGroup(groupId);
 
-  /* =========================
-   * NORMAL LIST
-   * ========================= */
+
   const [page, setPage] = useState(1);
 
   const {
@@ -48,20 +44,14 @@ export const GroupMembers: React.FC<GroupMembersProps> = ({ groupInfo }) => {
     refetch,
   } = useGetMembersOfGroup(groupId, page);
 
-  /* =========================
-   * DELETE
-   * ========================= */
+
   const { deleteGroupMember } = useDeleteGroupMember();
 
-  /* =========================
-   * UI STATE
-   * ========================= */
+
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
   const [showError, setShowError] = useState(false);
 
-  /* =========================
-   * DERIVED STATE
-   * ========================= */
+
   const isSearching = keyword.trim() !== "";
 
   const listData = isSearching ? searchUsers : members;
@@ -72,9 +62,7 @@ export const GroupMembers: React.FC<GroupMembersProps> = ({ groupInfo }) => {
     ? loadMoreSearch
     : () => setPage((prev) => prev + 1);
 
-  /* =========================
-   * INFINITE SCROLL
-   * ========================= */
+
   const observerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -94,44 +82,34 @@ export const GroupMembers: React.FC<GroupMembersProps> = ({ groupInfo }) => {
     return () => observer.disconnect();
   }, [isLoading, canLoadMore, isSearching]);
 
-  /* =========================
-   * FETCH NORMAL LIST
-   * ========================= */
+
   useEffect(() => {
     if (!groupId || isSearching) return;
-    refetch(groupId);
+    refetch();
   }, [page, groupId, isSearching]);
 
-  /* =========================
-   * RESET SEARCH WHEN CLEAR INPUT
-   * ========================= */
+
   useEffect(() => {
     if (inputValue.trim() === "") {
       setKeyword("");
     }
   }, [inputValue]);
 
-  /* =========================
-   * ERROR HANDLING
-   * ========================= */
+
   useEffect(() => {
     if (error || searchError) {
       setShowError(true);
     }
   }, [error, searchError]);
 
-  /* =========================
-   * CLOSE MENU
-   * ========================= */
+
   useEffect(() => {
     const close = () => setActiveMenuId(null);
     window.addEventListener("click", close);
     return () => window.removeEventListener("click", close);
   }, []);
 
-  /* =========================
-   * DELETE MEMBER
-   * ========================= */
+
   const handleDeleteMember = async (userId: string) => {
     if (!groupId) return;
 
@@ -157,19 +135,15 @@ export const GroupMembers: React.FC<GroupMembersProps> = ({ groupInfo }) => {
       </span>
     );
 
-  /* =========================
-   * FIRST LOAD
-   * ========================= */
+
   if (isLoading && listData.length === 0) {
     return <GroupMembersSkeleton />;
   }
 
-  /* =========================
-   * RENDER
-   * ========================= */
+
   return (
     <div className="w-full max-w-5xl px-4 py-6 mx-auto">
-      <div className="overflow-hidden bg-white border rounded-lg shadow-sm">
+      <div className="overflow-visible bg-white border rounded-lg shadow-sm">
         {/* HEADER */}
         <div className="p-6 border-b">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -205,14 +179,19 @@ export const GroupMembers: React.FC<GroupMembersProps> = ({ groupInfo }) => {
                 className="flex items-center justify-between p-4 hover:bg-gray-50"
               >
                 <div className="flex items-center gap-3">
-                  <img
-                    src={member.avatar_url}
-                    className="object-cover w-12 h-12 border rounded-full"
-                  />
-                  <div>
-                    <h3 className="font-semibold">{member.name}</h3>
-                    {getRoleBadge(member.role)}
-                  </div>
+                  <Link to={`/profile/${member.user_id}`} className="flex items-center gap-3 group">
+                      <img
+                        src={member.avatar_url}
+                        className="object-cover w-12 h-12 transition-opacity border rounded-full group-hover:opacity-80"
+                        alt={member.name}
+                      />
+                      <div>
+                        <h3 className="font-semibold transition-colors group-hover:text-blue-600">
+                          {member.name}
+                        </h3>
+                        {getRoleBadge(member.role as MemberRole)}
+                      </div>
+                    </Link>
                 </div>
 
                 {member.role !== "admin" && (

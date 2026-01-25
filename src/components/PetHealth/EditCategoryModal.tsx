@@ -19,28 +19,43 @@ export const EditCategoryModal: React.FC<EditCategoryModalProps> = ({
   const [categoryName, setCategoryName] = useState<string>("");
   const [intervalDays, setIntervalDays] = useState<number | string>("");
   const [unit, setUnit] = useState<string>("");
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
   // Reset form và điền dữ liệu cũ khi mở modal hoặc khi initialData thay đổi
   useEffect(() => {
     if (isOpen && initialData) {
       setCategoryName(initialData.name || "");
       setUnit(initialData.unit || "");
       setIntervalDays(initialData.interval_days || "");
+      setErrors({});
     }
   }, [isOpen, initialData]);
 
   const validateUpdateCategory = () => {
     if (!initialData) return;
 
+    const newErrors: { [key: string]: string } = {};
+
+    // Validate tên
     if (!categoryName.trim()) {
-      alert("Vui lòng nhập tên danh mục.");
-      return;
+      newErrors.name = "Tên danh mục không được để trống.";
     }
 
-    if (initialData.category_type === "schedule" && !intervalDays) {
-      alert("Vui lòng nhập số ngày cho lịch.");
+    // Validate ngày lặp lại cho loại schedule
+    if (initialData.category_type === "schedule") {
+      if (!intervalDays) {
+        newErrors.interval = "Vui lòng nhập số ngày lặp lại.";
+      } else if (Number(intervalDays) <= 0) {
+        newErrors.interval = "Số ngày phải lớn hơn 0.";
+      }
+    }
+    if (initialData.category_type === "metric" && !unit.trim()) {
+      newErrors.unit = "Vui lòng nhập đơn vị tính (kg, cm, lần...).";
+    }
+    // Nếu có lỗi thì cập nhật state và dừng lại
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
       return;
     }
-
     // Chuẩn bị payload để gửi đi update
     const data: any = {
       name: categoryName,
@@ -111,10 +126,22 @@ export const EditCategoryModal: React.FC<EditCategoryModalProps> = ({
                 type="text"
                 id="edit-cat-name"
                 value={categoryName}
-                onChange={(e) => setCategoryName(e.target.value)}
+                onChange={(e) => {
+                  setCategoryName(e.target.value);
+                  if (errors.name) setErrors((prev) => ({ ...prev, name: "" }));
+                }}
                 placeholder="Nhập tên danh mục..."
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                className={`w-full px-4 py-2.5 border rounded-xl shadow-sm focus:outline-none focus:ring-2 transition-all ${
+                  errors.name
+                    ? "border-red-500 focus:ring-red-100"
+                    : "border-gray-300 focus:ring-amber-500"
+                }`}
               />
+              {errors.name && (
+                <p className="mt-1 text-xs font-medium text-red-500">
+                  {errors.name}
+                </p>
+              )}
             </div>
 
             {/* 2. Ngày lặp lại (Chỉ hiện nếu là schedule) */}
@@ -130,10 +157,23 @@ export const EditCategoryModal: React.FC<EditCategoryModalProps> = ({
                   type="number"
                   id="edit-interval"
                   value={intervalDays}
-                  onChange={(e) => setIntervalDays(e.target.value)}
+                  onChange={(e) => {
+                    setIntervalDays(e.target.value);
+                    if (errors.interval)
+                      setErrors((prev) => ({ ...prev, interval: "" }));
+                  }}
                   placeholder="Ví dụ: 30"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                  className={`w-full px-4 py-2.5 border rounded-xl shadow-sm focus:outline-none focus:ring-2 transition-all ${
+                    errors.interval
+                      ? "border-red-500 focus:ring-red-100"
+                      : "border-gray-300 focus:ring-amber-500"
+                  }`}
                 />
+                {errors.interval && (
+                  <p className="mt-1 text-xs font-medium text-red-500">
+                    {errors.interval}
+                  </p>
+                )}
               </div>
             )}
 
@@ -150,16 +190,34 @@ export const EditCategoryModal: React.FC<EditCategoryModalProps> = ({
                   type="text"
                   id="edit-unit"
                   value={unit}
-                  onChange={(e) => setUnit(e.target.value)}
+                  onChange={(e) => {
+                    setUnit(e.target.value);
+                    // Xóa lỗi ngay khi người dùng bắt đầu nhập
+                    if (errors.unit)
+                      setErrors((prev) => ({ ...prev, unit: "" }));
+                  }}
                   placeholder="Ví dụ: kg, cm..."
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                  className={`w-full px-4 py-2.5 border rounded-xl shadow-sm focus:outline-none focus:ring-2 transition-all ${
+                    errors.unit
+                      ? "border-red-500 focus:ring-red-100"
+                      : "border-gray-300 focus:ring-amber-500"
+                  }`}
                 />
+                {errors.unit && (
+                  <p className="mt-1 text-xs font-medium text-red-500">
+                    {errors.unit}
+                  </p>
+                )}
               </div>
             )}
 
             {/* Hiển thị loại (Read-only để user biết đang sửa cái gì) */}
             <div className="pt-2 text-xs text-gray-500">
-              Loại danh mục: <span className="font-semibold uppercase">{initialData.category_type}</span> (Không thể thay đổi)
+              Loại danh mục:{" "}
+              <span className="font-semibold uppercase">
+                {initialData.category_type}
+              </span>{" "}
+              (Không thể thay đổi)
             </div>
           </form>
         </div>

@@ -49,9 +49,7 @@ export const PreviewPost = ({ post, handleApprove, handleReject }: PostProps) =>
       >
         <PostHeader
           post={post}
-          isOwner={false}
-          onEdit={() => {}}
-          onDelete={() => {}}
+        
         />
 
         {post.caption && (

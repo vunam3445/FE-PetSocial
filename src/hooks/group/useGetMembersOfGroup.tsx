@@ -6,6 +6,7 @@ interface UseGetMembersOfGroupResult {
   loading: boolean;
   error: string | null;
   members: Member[];
+  setMembers: React.Dispatch<React.SetStateAction<Member[]>>;
   hasMore: boolean;
   refetch: () => void;
   reset: () => void;
@@ -13,7 +14,7 @@ interface UseGetMembersOfGroupResult {
 
 export const useGetMembersOfGroup = (
   groupId: string,
-  page: number = 1
+  page: number = 1,
 ): UseGetMembersOfGroupResult => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -33,14 +34,12 @@ export const useGetMembersOfGroup = (
         const result = response.data;
         const newMembers: Member[] = result.data ?? [];
 
-        setMembers(prev => {
+        setMembers((prev) => {
           if (page === 1) return newMembers;
 
           // tránh trùng khi React StrictMode
-          const existingIds = new Set(prev.map(m => m.user_id));
-          const unique = newMembers.filter(
-            m => !existingIds.has(m.user_id)
-          );
+          const existingIds = new Set(prev.map((m) => m.user_id));
+          const unique = newMembers.filter((m) => !existingIds.has(m.user_id));
 
           return [...prev, ...unique];
         });

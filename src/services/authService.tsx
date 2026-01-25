@@ -35,3 +35,28 @@ export const loginUser = async (data: {
     return { success: false, message };
   }
 };
+
+
+export const changePassword = async(userId: string, data:any) =>{
+  const url = `/users/${userId}/changePassword`;
+  const res = await api.put(url,data);
+  return res;
+}
+
+export const sendOtp = async(emai: string)=>{
+  const url = `/auth/sendOtp`;
+  const res = await api.post(url,{email:emai});
+  return res;
+}
+
+export const verifyOtp = async(email: string, otp: number)=>{
+  const url = `/auth/confirmOtp`;
+  const res = await api.post(url,{email:email,otp:otp});
+  return res;
+}
+
+export const resetPassword = async(email: string, new_password: string, confirm_password: string)=>{
+  const url = `/auth/resetPassword`;
+  const res = await api.post(url,{email:email,new_password: new_password,confirm_password:confirm_password});
+  return res;
+}

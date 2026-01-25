@@ -1,7 +1,8 @@
 import { useState, type ChangeEvent, type FormEvent } from "react";
 import { registerUser } from "../../services/authService";
 import { LoadingOverlay } from "../loadings/LoadingOverlay";
-import { OTPInput } from "../atoms/OtpInput";
+import { OTPInput } from "../atoms/OTPInput";
+import ErrorToast from "../toasts/ErrorToast";
 import axios from "axios";
 export const RegisterForm = ({
   onSuccess,
@@ -19,6 +20,15 @@ export const RegisterForm = ({
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState<"form" | "otp">("form"); // bước hiện tại
   const [otp, setOtp] = useState("");
+  const [errorToast, setErrorToast] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const handleError = (error: any) => {
+    console.error(error);
+    // Lấy message từ Backend (Laravel trả về trong response.data.message)
+    const msg = error.response?.data?.message || "Đã có lỗi xảy ra. Vui lòng thử lại.";
+    setErrorMessage(msg);
+    setErrorToast(true);
+  };
   const handleChange = (
     e: ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
@@ -38,8 +48,7 @@ export const RegisterForm = ({
       await registerUser(form);
       onSuccess(form.email);
     } catch (error) {
-      console.error("Đăng ký thất bại:", error);
-      alert("Đăng ký thất bại. Vui lòng thử lại.");
+        handleError(error);
     } finally {
       setLoading(false);
     }
@@ -47,23 +56,28 @@ export const RegisterForm = ({
 
   const handleRequestOtp = async (e: FormEvent) => {
     e.preventDefault();
+    
+    // Kiểm tra mật khẩu trước khi gửi request
     if (form.password !== form.password_confirmation) {
-      alert("Mật khẩu xác nhận không khớp!");
+      setErrorMessage("Mật khẩu xác nhận không khớp!");
+      setErrorToast(true);
       return;
     }
 
-    // setLoading(true);
+    setLoading(true); // Bật loading để người dùng không bấm liên tục
     try {
-      setStep("otp"); // chuyển sang bước nhập OTP
-
+      // 1. Gửi request lên server
       await axios.post(`${import.meta.env.VITE_API_BASE_URL}/auth/sendOtp`, {
-        email: form.email, // hoặc phone nếu bạn dùng OTP qua SMS
+        email: form.email,
       });
+
+      // 2. Nếu thành công (không nhảy vào catch), mới chuyển sang bước OTP
+      setStep("otp"); 
     } catch (error) {
-      console.error("Lỗi gửi OTP:", error);
-      alert("Không gửi được OTP, vui lòng thử lại.");
+      // 3. Nếu lỗi (email sai định dạng, email đã tồn tại, lỗi server...), hiển thị toast
+      handleError(error);
     } finally {
-      // setLoading(false);
+      setLoading(false); // Tắt loading
     }
   };
   // B2: gửi OTP + toàn bộ dữ liệu user
@@ -82,8 +96,7 @@ export const RegisterForm = ({
 
       onSuccess(form.email);
     } catch (error: any) {
-      console.error("Xác thực thất bại:", error);
-      alert("OTP không đúng hoặc đã hết hạn.");
+     handleError(error);
     } finally {
       setLoading(false);
     }
@@ -202,6 +215,11 @@ export const RegisterForm = ({
           onSubmit={handleConfirmOtp}
         />
       )}
+      <ErrorToast 
+        open={errorToast} 
+        text={errorMessage} 
+        onClose={() => setErrorToast(false)} 
+      />
     </>
   );
 };

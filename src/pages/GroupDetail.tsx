@@ -50,8 +50,6 @@ export const GroupDetail = () => {
     }
   };
 
-  // 3. Nếu fetch xong mà vẫn null (hoặc chưa sync xong localGroupInfo) -> Chặn render nội dung chính
-  // Logic này giúp tránh lỗi crash khi truy cập "localGroupInfo.group"
   if (!localGroupInfo) return null;
   // Hàm render nội du  ng chính
   const renderContent = () => {
@@ -62,23 +60,23 @@ export const GroupDetail = () => {
             <GroupHeader groupInfo={localGroupInfo} loading={loading} />
             <main className="px-4 py-6 mx-auto max-w-7xl sm:px-6 lg:px-8">
               <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-                
-               {groupInfo?.member_role !== null && (
-                 <div className="space-y-6 lg:col-span-2">
-                  <CreatePost
-                    onPostCreated={handleCreate}
-                    group_id={groupInfo?.group.group_id}
-                  />
-                  {/* Post List components here */}
-                  <PostsOfGroupContainer
-                    groupId={groupInfo?.group.group_id}
-                    newPost={newPost}
-                  />
-                </div>
-               )}
+                {groupInfo?.member_role !== null && (
+                  <div className="space-y-6 lg:col-span-2">
+                    <CreatePost
+                      onPostCreated={handleCreate}
+                      group_id={groupInfo?.group.group_id}
+                    />
+                    {/* Post List components here */}
+                    <PostsOfGroupContainer
+                      groupId={groupInfo?.group.group_id}
+                      newPost={newPost}
+                      isInGroupPage={true}
+                    />
+                  </div>
+                )}
                 <div className="space-y-6 lg:col-span-1">
                   <IntroCard
-                    description={groupInfo?.group.description}
+                    description={localGroupInfo?.group.description}
                     loading={loading}
                   />
                 </div>
@@ -107,28 +105,79 @@ export const GroupDetail = () => {
       case "member_requests":
         return (
           <main className="max-w-5xl px-4 py-6 mx-auto sm:px-6 lg:px-8">
-            <MemberRequests groupInfo={localGroupInfo?.group} />
+            <MemberRequests
+              groupInfo={localGroupInfo?.group}
+              onActionSuccess={decrementJoinRequestCount}
+            />
           </main>
         );
 
-      case "pending_posts": // <-- THÊM CASE MỚI
+      case "pending_posts":
         return (
           <main className="h-full bg-[#f0f2f5]">
-            <PendingPosts groupId={groupInfo?.group.group_id} />
+            <PendingPosts
+              groupId={groupInfo?.group.group_id}
+              onActionSuccess={decrementPendingPostCount}
+            />
             {/* Sau này có thể truyền props: groupId={localGroupInfo.group.group_id} */}
           </main>
         );
-      case "reported_posts": // <-- THÊM CASE MỚI
+      case "reported_posts":
         return (
           <main className="h-full bg-[#f0f2f5]">
-            <ReportedPosts groupId={groupInfo?.group.group_id} />
+            <ReportedPosts
+              groupId={groupInfo?.group.group_id}
+              onActionSuccess={decrementReportCount}
+            />
           </main>
         );
       default:
         return null;
     }
   };
+  const decrementReportCount = () => {
+    setLocalGroupInfo((prev) =>
+      prev
+        ? {
+            ...prev,
+            reported_posts_count: Math.max(
+              0,
+              (prev.reported_posts_count || 0) - 1,
+            ),
+          }
+        : null,
+    );
+  };
 
+  // Hàm giảm số lượng bài viết chờ duyệt
+  const decrementPendingPostCount = () => {
+    setLocalGroupInfo((prev) =>
+      prev
+        ? {
+            ...prev,
+            pending_posts_count: Math.max(
+              0,
+              (prev.pending_posts_count || 0) - 1,
+            ),
+          }
+        : null,
+    );
+  };
+
+  // Hàm giảm số lượng yêu cầu tham gia
+  const decrementJoinRequestCount = () => {
+    setLocalGroupInfo((prev) =>
+      prev
+        ? {
+            ...prev,
+            pending_join_requests_count: Math.max(
+              0,
+              (prev.pending_join_requests_count || 0) - 1,
+            ),
+          }
+        : null,
+    );
+  };
   return (
     <div className="grid h-screen grid-cols-1 pt-16 lg:grid-cols-10 bg-[#f0f2f5]">
       <Header />

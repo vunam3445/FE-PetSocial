@@ -8,7 +8,6 @@ import { PetSearchList } from "../components/molecules/PetSearchList";
 import { SkeletonCard } from "../components/skeleton/SkeletonCard";
 import { PostSkeleton } from "../components/skeleton/PostSkeleton";
 import { GroupSearchList } from "../components/molecules/GroupSearchList"; // Import mới
-import { useState } from "react";
 export const SearchPage = () => {
   const [params, setParams] = useSearchParams();
 

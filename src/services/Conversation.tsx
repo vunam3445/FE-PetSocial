@@ -70,3 +70,15 @@ export const updateConversation = async (conversationId: string, conversationNam
         throw error.response?.data;
     }
 }
+
+export const changeRole =async (conversationId: string, targetId: string)=>{
+    const url = `/conversations/${conversationId}/changeRole/users/${targetId}`;
+    const res = await api.put(url);
+    return res;
+}
+
+export const deleteConversation = async(conversationId: string)=>{
+    const url = `/conversations/${conversationId}/delete`;
+    const res = await api.delete(url);
+    return res;
+}

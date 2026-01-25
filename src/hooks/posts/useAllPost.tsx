@@ -33,6 +33,5 @@ export function useAllPosts(page: number = 1) {
         setLoading(false);
       });
   }, [page]);
-
   return { posts, setPosts, loading, error, hasMore };
 }

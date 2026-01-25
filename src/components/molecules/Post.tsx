@@ -1,8 +1,8 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card } from "@mui/material";
 import { useParams } from "react-router-dom";
-import useUserId from "../../hooks/auth/useUserId";
+
 import { useLike } from "../../hooks/posts/useLike";
 import PostLightboxModal from "../modals/PostLightboxModal";
 import { PostHeader } from "../atoms/PostHeader";
@@ -36,10 +36,7 @@ const Post = ({
   const [liked, setLiked] = useState(post.is_liked === 1);
   const [commentsCount, setCommentsCount ] = useState(post.comments_count|| 0);
   const [likesCount, setLikesCount] = useState(post.likes_count ?? 0);
-  const { id } = useParams();
-  const isOwner = useUserId(id);
   const { toggleLike, error } = useLike();
-
   const openLightbox = (media: Media) => {
     const mediaSource = post.shared_post?.media ?? post.media;
     const index = mediaSource.findIndex((m) => m.media_url === media.media_url);
@@ -91,7 +88,9 @@ const Post = ({
     e.stopPropagation();
     onSharePost?.();
   };
-
+useEffect(() => {
+    setCommentsCount(post.comments_count || 0);
+  }, [post.comments_count]);
   return (
     <>
       <Card
@@ -106,7 +105,6 @@ const Post = ({
       >
         <PostHeader
           post={post}
-          isOwner={isOwner}
           onEdit={onEditPost}
           onDelete={onDeletePost}
           onReport={onReport}

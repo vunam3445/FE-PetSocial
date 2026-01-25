@@ -22,7 +22,8 @@ export interface Conversation {
   is_group: boolean;
   created_at: string; // ISO date string
   updated_at: string; // ISO date string
-  created_by:string;
+  created_by?:string;
+  my_role: string;
   participants: Participant[];
   avatar_url: string | null;
 }

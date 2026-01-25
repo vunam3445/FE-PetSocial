@@ -1,12 +1,11 @@
 import { useEffect, useState } from "react";
-import type { Post } from "../../types/ResponsePost";
 import { getReportOfGroup } from "../../services/ReportService";
-import type { ReportItem } from "../../types/Report";
+import type { ReportedPost } from "../../types/Report";
 export const useGetReportsOfGroup = (groupId: string,page: number) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
   const [hasMore, setHasMore] = useState(false);
-  const [reports, setReports] = useState<ReportItem[]>([]);
+  const [reports, setReports] = useState<ReportedPost[]>([]);
 
 
 
