@@ -14,7 +14,7 @@ export const PostsTab = () => {
     id,
     page
   );
-  const { handleUpdate, handleDelete, handleShare } = usePostActions(setPosts);
+  const { handleUpdate, handleDelete, handleShare } = usePostActions(setPosts,false,true);
 
   
   const observer = useRef<IntersectionObserver | null>(null);

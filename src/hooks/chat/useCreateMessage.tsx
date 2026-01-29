@@ -6,15 +6,13 @@ export function useCreateMessage() {
   const [error, setError] = useState<null | string>(null);
 
   const createMessage = useCallback(
-    async (conversationId: string, content: string, media_url?: string, reply_to_id?: string) => {
+    async (conversationId: string, formData: FormData) => {
       setLoading(true);
       setError(null);
       try {
-        const response = await createMessageApi(conversationId, content, media_url, reply_to_id);
-        if (response.status == 201) {
-          setLoading(false);
-          return response;
-        }
+        const response = await createMessageApi(conversationId, formData);
+        // Kiểm tra logic response dựa trên cấu trúc API của bạn
+        setLoading(false);
         return response;
       } catch (err: any) {
         setError(err.message || "Failed to create message");

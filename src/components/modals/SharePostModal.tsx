@@ -11,7 +11,7 @@ interface SharePostModalProps {
   open: boolean;
   onClose: () => void;
   onSubmit: (formData: SubmitData) => void;
-  post: Post; // 👈 post gốc để share
+  post: Post; //  post gốc để share
 }
 
 const SharePostModal: React.FC<SharePostModalProps> = ({
@@ -31,7 +31,6 @@ const SharePostModal: React.FC<SharePostModalProps> = ({
       caption: caption.trim(),
       visibility,
       shared_post_id:  post.shared_post ? post.shared_post_id : post.post_id, // nếu share bài share thì lấy id bài share
-
     };
     onSubmit(submitData);
     handleClose();

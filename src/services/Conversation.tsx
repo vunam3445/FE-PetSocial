@@ -82,3 +82,9 @@ export const deleteConversation = async(conversationId: string)=>{
     const res = await api.delete(url);
     return res;
 }
+
+export const unreadCount= async()=>{
+    const url = `/conversations/unread`;
+    const res = await api.get(url);
+    return res;
+}

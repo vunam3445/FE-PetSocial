@@ -3,14 +3,16 @@ import { type ConversationItem } from "../types/Chat";
 import { type EditingConversation } from "../types/Conversation";
 
 export interface Message {
-  message_id: string;   // ✅ đồng bộ với API
+  message_id: string;   //  đồng bộ với API
   text: string;
   senderId?: string;
   name?: string;
+  media_url?: string;
   avatarUrl?: string;
   time?: string;
   pending?: boolean; // tin nhắn local chờ confirm
   type?:string; // "me" | "other"
+  message_type?: "text" | "image" | "video" | "media";
 }
 
 export interface ChatContextType {
@@ -27,7 +29,7 @@ export interface ChatContextType {
   messages: { [conversationId: string]: Message[] }; 
   addMessage: (conversationId: string, message: Message) => void;
   updateMessage: (conversationId: string, tempId: string, newData: Message) => void;
-  onlineUsers: string[]; // ✅ danh sách userId đang online
+  onlineUsers: string[]; //  danh sách userId đang online
 
   editingConversation: EditingConversation | null;
   setEditingConversation: React.Dispatch<React.SetStateAction<EditingConversation | null>>;
@@ -38,6 +40,8 @@ export interface ChatContextType {
   notifications: any[]; // Bạn có thể dùng Interface NotificationItem đã định nghĩa trước đó
   unreadNotificationsCount: number;
   setUnreadNotificationsCount: React.Dispatch<React.SetStateAction<number>>;
+  unreadMessagesCount:number;
+  setUnreadMessagesCount: React.Dispatch<React.SetStateAction<number>>;
 }
 
 export const ChatContext = createContext<ChatContextType | null>(null);

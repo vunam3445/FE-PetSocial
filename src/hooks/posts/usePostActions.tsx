@@ -5,6 +5,7 @@ import { type Post } from "../../types/ResponsePost";
 export function usePostActions(
   setPosts: React.Dispatch<React.SetStateAction<Post[]>>,
   isInGroupPage: boolean = false,
+  isPetHealthPage: boolean = false,
 ) {
   const { updatePost } = useUpdatePost();
   const { deletePost } = useDeletePost();
@@ -26,8 +27,8 @@ export function usePostActions(
 
   const handleShare = async (data: SubmitData) => {
     const shared = await createPost(data);
-    // ✅ Kiểm tra: Nếu không phải trong trang Group Detail thì mới thêm vào đầu list
-    if (shared && !isInGroupPage) {
+    //  Kiểm tra: Nếu không phải trong trang Group Detail thì mới thêm vào đầu list
+    if (shared && !isInGroupPage && !isPetHealthPage) {
       setPosts((prev) => [shared, ...prev]);
     }
     return shared;

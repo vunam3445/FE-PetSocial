@@ -6,18 +6,19 @@ import { type Member } from "../../types/Conversation";
 import ConfirmDelete from "./ComfirmDeleteModal";
 import SuccessToast from "../toasts/SuccessToast";
 import useChangeRoleConversation from "../../hooks/chat/useChangeRoleConversation";
+import { useNavigate } from "react-router-dom";
 interface MemberModalProps {
   isOpen: boolean;
   onClose: () => void;
   conversationId: string;
-  created_by: string;
+  onRoleChanged: (newRole: string) => void;
 }
 
 export const ConversationMemberModal: React.FC<MemberModalProps> = ({
   isOpen,
   onClose,
   conversationId,
-  created_by,
+  onRoleChanged,
 }) => {
   const {
     members,
@@ -33,10 +34,6 @@ export const ConversationMemberModal: React.FC<MemberModalProps> = ({
   const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
   const userId = localStorage.getItem("user_id");
   const [successToast, setOpenSuccessToats] = useState(false);
-  const isAdmin = React.useMemo(
-    () => members.some((m) => m.user_id === userId && m.pivot.role === "admin"),
-    [members, userId]
-  );
   const [confirmModal, setConfirmModal] = useState<{
     show: boolean;
     userId: string;
@@ -92,6 +89,7 @@ export const ConversationMemberModal: React.FC<MemberModalProps> = ({
       const result = await changeRole(conversationId, targetId);
       if (result.success) {
         // Cập nhật UI cục bộ: Người cũ thành member, người mới thành admin
+        onRoleChanged("member");
         setOpenSuccessToats(true);
         setMembers((prevMembers) =>
           prevMembers.map((m) => {
@@ -105,12 +103,16 @@ export const ConversationMemberModal: React.FC<MemberModalProps> = ({
               return { ...m, pivot: { ...m.pivot, role: "member" } };
             }
             return m;
-          })
+          }),
         );
         onClose();
       }
     }
   };
+  const currentUserMember = members.find(
+    (m) => String(m.user_id) === String(userId),
+  );
+  const isAdmin = currentUserMember?.pivot.role === "admin";
   return (
     <>
       <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200">
@@ -202,7 +204,7 @@ export const ConversationMemberModal: React.FC<MemberModalProps> = ({
                           setOpenDropdownId(
                             openDropdownId === member.user_id
                               ? null
-                              : member.user_id
+                              : member.user_id,
                           )
                         }
                         className="p-2.5 text-gray-400 hover:bg-gray-100 rounded-full"
@@ -218,23 +220,28 @@ export const ConversationMemberModal: React.FC<MemberModalProps> = ({
 
                       {openDropdownId === member.user_id && (
                         <div className="absolute right-0 mt-2 w-56 bg-white border rounded-xl shadow-2xl z-[110] py-2">
-                          <button className="flex items-center w-full px-4 py-3 text-sm hover:bg-gray-50">
-                            👤 Xem hồ sơ
-                          </button>
+                          <a
+                            href={`/profile/${member.user_id}`}
+                            onClick={(e) => {
+                              // Nếu bạn muốn modal đóng trước khi chuyển trang
+                              onClose();
+                            }}
+                            className="flex items-center w-full px-4 py-3 text-sm text-gray-700 transition-colors hover:bg-gray-50"
+                          >
+                            <span className="mr-2">👤</span> Xem hồ sơ
+                          </a>
                           <div className="my-1 border-t border-gray-50"></div>
-                          {
-                            member.pivot.role != "admin" && (
+                          {isAdmin &&
+                            String(member.user_id) !== String(userId) && (
                               <>
                                 <div className="my-1 border-t border-gray-100"></div>
 
-                                {/* Option 2: Chuyển quyền quản lý (Nhường ngôi) */}
+                                {/* Option 2: Chuyển quyền quản lý */}
                                 <button
                                   onClick={() => {
-                                    // Bạn nên tạo một hàm Confirm riêng cho việc chuyển quyền
-                                    // Ví dụ: handleOpenPromoteConfirm(member.user_id, member.name)
                                     handleOpenChangeRoleConfirm(
                                       member.user_id,
-                                      "Bạn có chắc chắn muốn chuyển quyền quản lý không?"
+                                      `Bạn có chắc chắn muốn nhường quyền quản lý cho ${member.name}? Bạn sẽ trở thành thành viên thường.`,
                                     );
                                   }}
                                   className="flex items-center w-full px-4 py-3 text-sm font-medium text-blue-600 transition-colors hover:bg-blue-50"
@@ -242,17 +249,20 @@ export const ConversationMemberModal: React.FC<MemberModalProps> = ({
                                   <span className="mr-2">👑</span> Chuyển quyền
                                   quản lý
                                 </button>
+
                                 <div className="my-1 border-t border-gray-50"></div>
+
+                                {/* Option 3: Xóa khỏi nhóm */}
                                 <button
                                   onClick={() =>
                                     handleOpenConfirm(
                                       member.user_id,
-                                      "Bạn có chắc chắn muốn xóa người này không?"
+                                      `Bạn có chắc chắn muốn xóa ${member.name} khỏi cuộc hội thoại này?`,
                                     )
                                   }
                                   className="flex items-center w-full px-4 py-3 text-sm font-bold text-red-600 hover:bg-red-50"
                                 >
-                                  🗑️ Xóa khỏi nhóm
+                                  <span className="mr-2">🗑️</span> Xóa khỏi nhóm
                                 </button>
                               </>
                             )}

@@ -77,7 +77,7 @@ export const ConversationMessages = ({
         console.log(response);
         if (!response || response.length === 0) {
           setHasMore(false);
-          return; // ❌ stop ở đây, không load nữa
+          return; 
         }
 
         // Nếu số lượng tin nhắn < pageSize thì cũng hết luôn
@@ -101,7 +101,6 @@ export const ConversationMessages = ({
       }
     }
   };
-
   return (
     <div
       ref={containerRef}
@@ -125,6 +124,8 @@ export const ConversationMessages = ({
           pending={msg.pending}
           data-message={index}
           is_group={is_group}
+          media_url={msg.media_url} 
+          message_type={msg.message_type}
         />
       ))}
 
