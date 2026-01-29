@@ -11,6 +11,13 @@ interface SharedPostProps {
 
 export const SharedPost = ({ sharedPost, onDetailPost, onMediaClick }: SharedPostProps) => {
   const navigate = useNavigate();
+  const displayAvatar = sharedPost.pet ? sharedPost.pet.avatar_url : sharedPost.author.avatar_url;
+  const displayName = sharedPost.pet ? sharedPost.pet.name : sharedPost.author.name;
+  
+  // URL điều hướng: Nếu có pet thì về profile pet, nếu không thì về profile user
+  const profilePath = sharedPost.pet 
+    ? `/pet-health/${sharedPost.pet_id}` 
+    : `/profile/${sharedPost.author_id}`;
   return (
     <Box
       sx={{
@@ -29,7 +36,7 @@ export const SharedPost = ({ sharedPost, onDetailPost, onMediaClick }: SharedPos
       <CardHeader
         avatar={
           <Avatar
-            src={sharedPost.author.avatar_url}
+            src={displayAvatar}
             sx={{
               width: 48,
               height: 48,
@@ -37,19 +44,19 @@ export const SharedPost = ({ sharedPost, onDetailPost, onMediaClick }: SharedPos
             }}
             onClick={(e) => {
             e.stopPropagation();
-            navigate(`/profile/${sharedPost.author_id}`); // 👈 chuyển đến profile
+            navigate(profilePath); //  chuyển đến profile
           }}
           >
-            {sharedPost.author.name}
+            {displayName}
           </Avatar>
         }
         title={
           <Typography variant="h6" sx={{ fontWeight: 600 }}
           onClick={(e) => {
             e.stopPropagation();
-            navigate(`/profile/${sharedPost.author_id}`); // 👈 chuyển đến profile
+            navigate(profilePath); // 👈 chuyển đến profile
           }}>
-            {sharedPost.author.name}
+            {displayName}
           </Typography>
         }
         sx={{ pb: 1 }}

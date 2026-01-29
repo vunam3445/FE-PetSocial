@@ -33,22 +33,23 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({
   const [conversationsPage, setConversationsPage] = useState(1);
   const [hasMoreConversations, setHasMoreConversations] = useState(true);
   const [openEditConversation, setOpenEditConversation] = useState(false);
+  const [unreadMessagesCount, setUnreadMessagesCount] = useState(0);
+  const openConversationsRef = useRef(openConversations);
   const [editingConversation, setEditingConversation] =
     useState<EditingConversation | null>(null);
-  // ✅ giữ socket toàn cục
+  //  giữ socket toàn cục
   const socketRef = useRef<Socket | null>(null);
+useEffect(() => {
+  openConversationsRef.current = openConversations;
+}, [openConversations]);
 
-  // 👉 kết nối socket.io 1 lần khi app load
   useEffect(() => {
-    const socket = io(import.meta.env.VITE_API_WS_URL); // WebSocket server Node.js
+    const socket = io(import.meta.env.VITE_API_WS_URL);
     socketRef.current = socket;
-
-    // socket.on("connect", () => {
-    // });
     socket.on("connect", () => {
       const uid = localStorage.getItem("user_id");
       if (uid) {
-        // 👉 báo cho server rằng user này online
+        //  báo cho server rằng user này online
         socket.emit("user_online", uid);
       }
     });
@@ -60,21 +61,48 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({
 
     // lắng nghe tin nhắn realtime
     socket.on("receive_message", (msg: any) => {
-      if (msg.sender_id === userId) return; // bỏ qua tin nhắn do chính mình gửi
+      console.log("Nhận tin nhắn từ socket:", msg);
+      if (msg.sender_id === userId) return;
+     // Kiểm tra xem hội thoại này có đang được mở (trong các tab chat) không
+    const isWindowOpen = openConversationsRef.current.some(
+      (c) => c.id === msg.conversationId,
+    );
+    console.log(isWindowOpen)
+    if (!isWindowOpen) {
+      // CHỈ KHI KHÔNG MỞ MỚI TĂNG COUNT VÀ ĐỔI STATUS
+      setConversations((prevConvs) => {
+        const existingConv = prevConvs.find(
+          (c) => c.conversation.conversation_id === msg.conversationId,
+        );
+
+        // Nếu hội thoại này chưa có hoặc đang ở trạng thái 'read' thì mới tăng count tổng
+        if (!existingConv || existingConv.status === "read") {
+          setUnreadMessagesCount((prevCount) => prevCount + 1);
+        }
+
+        // Cập nhật status thành unread cho hội thoại đó
+        return prevConvs.map((c) =>
+          c.conversation.conversation_id === msg.conversationId
+            ? { ...c, status: "unread" as const }
+            : c
+        );
+      });
+    }
       addMessage(msg.conversationId, {
         message_id: msg.message_id,
         text: msg.content,
+        media_url: msg.media_url,
         senderId: msg.sender_id,
         time: msg.created_at,
         name: msg.sender?.name || "Unknown",
         avatarUrl: msg.sender.avatar_url || undefined,
         type: "other",
+        message_type: msg.message_type,
       });
     });
-
     // --- THÊM LOGIC THÔNG BÁO VÀO ĐÂY ---
     socket.on("new_notification", (noti: any) => {
-      console.log("🔥 Nhận thông báo mới:", noti);
+      console.log(" Nhận thông báo mới:", noti);
 
       // 1. Thêm vào danh sách thông báo (đưa lên đầu)
       setNotifications((prev) => {
@@ -97,9 +125,6 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({
 
       // 2. Tăng số lượng chưa đọc
       setUnreadNotificationsCount((prev) => prev + 1);
-
-      // 3. (Tùy chọn) Hiện Toast thông báo nhanh
-      // toast.info(noti.message);
     });
     // ------------------------------------
     return () => {
@@ -107,7 +132,7 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({
     };
   }, [userId]);
 
-  // 👉 khi mở 1 conversation thì join room đó
+  //  khi mở 1 conversation thì join room đó
   const openConversation: ChatContextType["openConversation"] = async (
     conv,
   ) => {
@@ -118,6 +143,47 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({
       return [...prev, conv];
     });
     try {
+      // 1. Tìm thông tin hội thoại hiện tại trong danh sách state
+      const currentConvItem = conversations.find(
+        (c) => c.conversation.conversation_id === conv.id,
+      );
+
+      if (currentConvItem) {
+        const { conversation, latest_message } = currentConvItem;
+
+        // 2. Kiểm tra xem hội thoại này thực sự có tin nhắn chưa đọc không
+        const lastReadTime = conversation.last_read_at
+          ? new Date(conversation.last_read_at).getTime()
+          : 0;
+        const lastMsgTime = latest_message
+          ? new Date(latest_message.created_at).getTime()
+          : 0;
+
+        const isActuallyUnread = lastMsgTime > lastReadTime;
+
+        // 3. Nếu thực sự chưa đọc, giảm count ở Header
+        if (isActuallyUnread) {
+          setUnreadMessagesCount((prevCount) => Math.max(0, prevCount - 1));
+        }
+
+        // 4. Cập nhật lại thời gian đọc cuối cùng trong danh sách local
+        // để giao diện Sidebar mất dấu chấm xanh ngay lập tức
+        setConversations((prev) =>
+          prev.map((item) =>
+            item.conversation.conversation_id === conv.id
+              ? {
+                  ...item,
+                  conversation: {
+                    ...item.conversation,
+                    last_read_at: new Date().toISOString(), // Giả lập thời gian vừa đọc
+                  },
+                }
+              : item,
+          ),
+        );
+      }
+
+      // 5. Gọi API để Backend lưu lại trạng thái đã đọc
       await markAsRead(conv.id);
     } catch (error) {
       console.error("Lỗi khi cập nhật trạng thái đã đọc:", error);
@@ -128,7 +194,7 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({
     setOpenConversations((prev) => prev.filter((c) => c.id !== id));
   };
 
-  // ✅ thêm message
+  //  thêm message
   const addMessage = (conversationId: string, message: Message) => {
     setMessages((prev) => {
       const msgs = prev[conversationId] || [];
@@ -141,7 +207,7 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({
     });
   };
 
-  // ✅ update pending message
+  //  update pending message
   const updateMessage = (
     conversationId: string,
     tempId: string,
@@ -156,7 +222,7 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({
     });
   };
 
-  // ✅ fetch messages từ API
+  //  fetch messages từ API
   const fetchMessages = useCallback(
     async (conversationId: string, page: number = 1) => {
       try {
@@ -171,6 +237,8 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({
           name: msg.sender?.name || "Unknown",
           avatarUrl: msg.sender?.avatar_url,
           type: msg.sender_id === userId ? "me" : "other",
+          media_url: msg.media_url,
+          message_type: msg.message_type,
         }));
 
         setMessages((prev) => {
@@ -252,6 +320,8 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({
         setEditingConversation,
         openEditConversation,
         setOpenEditConversation,
+        unreadMessagesCount,
+        setUnreadMessagesCount,
       }}
     >
       {children}

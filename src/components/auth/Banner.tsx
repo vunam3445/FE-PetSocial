@@ -14,7 +14,7 @@ export const Banner = () => {
         {/* Hiển thị ảnh logo lớn */}
         <div className="mx-auto mb-8 overflow-hidden bg-white rounded-full shadow-2xl w-80 h-80">
           <img
-            src="/public/logo_login.png" // ✅ ảnh trong thư mục public
+            src="/logo_login.png" // ảnh trong thư mục public
             alt="PetConnect"
             className="object-cover w-full h-full"
           />

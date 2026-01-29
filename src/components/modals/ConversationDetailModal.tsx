@@ -23,6 +23,7 @@ export const ConversationDetailModal: React.FC<Props> = ({ conversation }) => {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [openEditModal, setOpenEditModal] = useState(false);
   const [currentConversation, setCurrentConversation] = useState(conversation);
+  const [myRole, setMyRole] = useState(conversation.my_role);
   useEffect(() => {
     setCurrentConversation(conversation);
   }, [conversation]);
@@ -45,7 +46,9 @@ export const ConversationDetailModal: React.FC<Props> = ({ conversation }) => {
   const handleOpenAddMember = () => {
     setIsAddModalOpen(true);
   };
-
+const handleRoleChanged = (newRole: string) => {
+    setMyRole(newRole);
+  };
   return (
     <div className="flex flex-col bg-white border border-gray-200 shadow-2xl w-96 h-96 rounded-t-xl">
       <ConversationHeader
@@ -55,7 +58,7 @@ export const ConversationDetailModal: React.FC<Props> = ({ conversation }) => {
         onClose={() => closeConversation(conversation.id)}
         is_group={conversation.is_group}
         onOpenModal={handleOpenGroupMember}
-        my_role={conversation.my_role}
+        my_role={myRole}
         onAddMember={handleOpenAddMember}
         onEditConversation={()=>{setOpenEditModal(true)}}
       />
@@ -77,7 +80,7 @@ export const ConversationDetailModal: React.FC<Props> = ({ conversation }) => {
           setIsOpenModal(false);
         }}
         conversationId={conversation.id}
-        created_by={conversation.created_by}
+        onRoleChanged={handleRoleChanged}
       />
       <AddMemberModal
         isOpen={isAddModalOpen}

@@ -7,7 +7,10 @@ import { useReadNotification } from "../../hooks/notification/useReadNotificatio
 import { useChat } from "../../contexts/ChatContext";
 import type { NotificationItem } from "../../types/Notification";
 import { ChangePasswordModal } from "../modals/ChangePasswordModal";
+import useGetUnreadConversations from "../../hooks/chat/useGetUnreadConversations";
 export const Header = () => {
+  const { unreadCount: chatUnreadCount } =
+    useGetUnreadConversations();
   const [params] = useSearchParams();
   const [keyword, setKeyword] = useState("");
   const navigate = useNavigate();
@@ -75,8 +78,9 @@ export const Header = () => {
         // Xử lý cập nhật status cho lời mời vào nhóm
         if (
           updatedItem.data?.type === "conversation_invitation" &&
-          solveStatus // Chỉ cập nhật nếu có truyền status vào
+          solveStatus
         ) {
+          // Đảm bảo cấu trúc data giống với API trả về
           updatedItem.data = { ...updatedItem.data, status: solveStatus };
         }
 
@@ -200,6 +204,7 @@ export const Header = () => {
                   d="M4 6h16M4 12h16M4 18h16"
                 ></path>
               </svg>
+              
             </button>
 
             {/* Bọc toàn bộ vùng icon thông báo vào 1 div relative */}
@@ -222,11 +227,11 @@ export const Header = () => {
                     d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
                   />
                 </svg>
-                {unreadCount !== 0 && (
-                  <span className="absolute flex items-center justify-center w-4 h-4 text-[10px] text-white bg-red-500 rounded-full top-1 right-1">
-                    {unreadCount}
-                  </span>
-                )}
+                {unreadCount > 0 && (
+      <span className="absolute flex items-center justify-center w-4 h-4 text-[10px] text-white bg-red-500 rounded-full top-1 right-1">
+        {unreadCount > 9 ? "9+" : unreadCount}
+      </span>
+    )}
               </button>
 
               {/* Định vị tuyệt đối */}
@@ -259,9 +264,11 @@ export const Header = () => {
                   d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
                 ></path>
               </svg>
-              {/* <span className="absolute flex items-center justify-center w-4 h-4 text-xs text-white bg-green-500 rounded-full -top-1 -right-1">
-                2
-              </span> */}
+              {chatUnreadCount > 0 && (
+                <span className="absolute flex items-center justify-center w-4 h-4 text-[10px] text-white bg-blue-500 rounded-full top-1 right-1 animate-bounce">
+                  {chatUnreadCount > 9 ? "9+" : chatUnreadCount}
+                </span>
+              )}
             </button>
 
             <div className="relative">

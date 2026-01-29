@@ -65,9 +65,9 @@ export const ProfileInfoCard: React.FC<{ pet: PetInfo }> = ({ pet }) => {
 
       {!isMyPet && (
         <div className="flex justify-center gap-3 mt-5">
-          <button className="px-5 py-2 font-semibold text-gray-800 transition duration-300 bg-white border rounded-lg shadow-md hover:bg-gray-100">
+          {/* <button className="px-5 py-2 font-semibold text-gray-800 transition duration-300 bg-white border rounded-lg shadow-md hover:bg-gray-100">
             Nhắn tin
-          </button>
+          </button> */}
           <button
             className={`px-5 py-2 font-semibold text-white transition duration-300 bg-indigo-600 rounded-lg shadow-md hover:bg-indigo-700 ${
               followLoading || unfollowLoading

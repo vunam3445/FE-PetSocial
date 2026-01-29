@@ -71,7 +71,8 @@ export const GroupHeader = ({ groupInfo, loading }: GroupHeaderProps) => {
 
         return {
           ...prev,
-          join_request_status: "pending",
+          member_role: "member",
+          join_request_status: null,
           has_join_request: true,
         };
       });
